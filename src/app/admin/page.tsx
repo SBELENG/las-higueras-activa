@@ -329,7 +329,7 @@ export default function AdminDashboardPage() {
                       strokeWeight: 2,
                       strokeColor: '#FFFFFF',
                       scale: 1.5,
-                      anchor: new google.maps.Point(12, 24),
+                      anchor: typeof google !== 'undefined' ? new google.maps.Point(12, 24) : undefined,
                     }}
                   />
                 ))}
