@@ -1,0 +1,587 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+
+import { MAP_OPTIONS } from '@/config/mapStyle';
+
+const INITIAL_CENTER = { lat: -33.0858, lng: -64.2934 }; // Centro de Las Higueras
+
+export default function AdminDashboardPage() {
+  const [claims, setClaims] = useState<any[]>([]);
+  const [filteredClaims, setFilteredClaims] = useState<any[]>([]);
+  const [selectedClaim, setSelectedClaim] = useState<any>(null);
+  const [observation, setObservation] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [showRejection, setShowRejection] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [timeFilter, setTimeFilter] = useState('all');
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [mapCenter, setMapCenter] = useState(INITIAL_CENTER);
+  const [mapZoom, setMapZoom] = useState(14);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('lh_admin_user');
+    if (userStr) setCurrentUser(JSON.parse(userStr));
+    else {
+      // Por defecto para testing
+      setCurrentUser({ name: 'Gestor Municipal', role: 'gestor' });
+    }
+  }, []);
+  
+  const [metrics, setMetrics] = useState({
+    total: 0,
+    pending: 0,
+    inProgress: 0,
+    resolved: 0,
+    rejected: 0,
+    priorities: 0
+  });
+
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || ''
+  });
+
+  const loadData = () => {
+    const allClaims = JSON.parse(localStorage.getItem('lh_claims') || '[]');
+    setClaims(allClaims);
+    
+    // Metrics should be calculated before applying the status filter to show global distribution in the sidebar
+    let contextFiltered = [...allClaims];
+    if (categoryFilter !== 'all') contextFiltered = contextFiltered.filter((c) => c.category === categoryFilter);
+    if (roleFilter !== 'all') contextFiltered = contextFiltered.filter((c) => c.user_role === roleFilter);
+    if (timeFilter !== 'all') {
+       const now = new Date();
+       contextFiltered = contextFiltered.filter((c) => {
+          const claimDate = new Date(c.date);
+          if (timeFilter === 'today') return claimDate.toDateString() === now.toDateString();
+          if (timeFilter === 'week') return claimDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          if (timeFilter === 'month') return claimDate.getMonth() === now.getMonth() && claimDate.getFullYear() === now.getFullYear();
+          if (timeFilter === 'year') return claimDate.getFullYear() === now.getFullYear();
+          return true;
+       });
+    }
+
+    setMetrics({
+      total: contextFiltered.length,
+      pending: contextFiltered.filter((c: any) => c.status === 'PENDING').length,
+      inProgress: contextFiltered.filter((c: any) => c.status === 'IN_PROGRESS').length,
+      resolved: contextFiltered.filter((c: any) => c.status === 'RESOLVED').length,
+      rejected: contextFiltered.filter((c: any) => c.status === 'REJECTED').length,
+      priorities: contextFiltered.filter((c: any) => c.priority).length
+    });
+
+    // Now apply status filter for the actual list
+    let filtered = [...contextFiltered];
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter((c) => c.status === statusFilter);
+    }
+    
+    filtered.sort((a, b) => {
+      if (a.priority && !b.priority) return -1;
+      if (!a.priority && b.priority) return 1;
+      return 0;
+    });
+
+    setFilteredClaims(filtered);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [statusFilter, categoryFilter, roleFilter, timeFilter]);
+
+  const handleTogglePriority = (claimId: string, e: any) => {
+    e.stopPropagation();
+    const updated = claims.map(c => c.id === claimId ? { ...c, priority: !c.priority } : c);
+    localStorage.setItem('lh_claims', JSON.stringify(updated));
+    loadData();
+    if (selectedClaim?.id === claimId) {
+      setSelectedClaim(updated.find(c => c.id === claimId));
+    }
+  };
+
+  const handleStatusChange = (claimId: string, newStatus: string, reason?: string) => {
+    const updatedClaims = claims.map(c => {
+      if (c.id === claimId) {
+        // Strategic: Notify the user in 'lh_messages'
+        const messages = JSON.parse(localStorage.getItem('lh_messages') || '[]');
+        const now = new Date();
+        const dateStr = now.toLocaleDateString();
+        
+        let statusTitle = 'Actualización de Reclamo';
+        let statusBody = `Novedades sobre su reclamo #${c.id}: el estado ha cambiado a ${newStatus === 'IN_PROGRESS' ? 'EN PROCESO' : newStatus === 'RESOLVED' ? 'RESUELTO' : 'RECHAZADO'}.`;
+        
+        if (newStatus === 'REJECTED') {
+          statusTitle = 'Reclamo No Corresponde';
+          statusBody = `Su reclamo #${c.id} ha sido rechazado. Motivo: ${reason || 'Información insuficiente o no encuadra en servicios municipales.'}`;
+        }
+
+        const newMessage = {
+          id: Date.now(),
+          from: 'Gestión Municipal',
+          title: statusTitle,
+          body: statusBody,
+          date: now.toISOString(),
+          type: newStatus === 'REJECTED' ? 'alert' : 'update',
+          read: false
+        };
+        localStorage.setItem('lh_messages', JSON.stringify([newMessage, ...messages]));
+
+        return { 
+          ...c, 
+          status: newStatus, 
+          last_observation: observation,
+          rejection_reason: reason
+        };
+      }
+      return c;
+    });
+
+    localStorage.setItem('lh_claims', JSON.stringify(updatedClaims));
+    setObservation('');
+    setSelectedClaim(null);
+    loadData();
+  };
+
+  const handleSelectClaim = (claim: any) => {
+    setSelectedClaim(claim);
+    if (claim.location) {
+      setMapCenter(claim.location);
+      setMapZoom(17);
+    }
+  };
+
+  return (
+    <main className="min-h-screen relative p-4 md:p-8 flex flex-col items-center">
+      <div className="app-bg"></div>
+      
+      <div className="w-full max-w-[1600px] space-y-6 z-10">
+        <header className="flex justify-between items-center bg-black/40 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl">
+          <div>
+            <h1 className="text-2xl font-black text-white tracking-tight uppercase">Panel de Control</h1>
+            <p className="text-[#2ECC71] text-[10px] font-bold tracking-[0.2em] uppercase">Monitoreo de Gestión Municipal — Las Higueras</p>
+          </div>
+          <div className="flex gap-8">
+            <button 
+              onClick={() => {
+                const now = new Date();
+                const demoData = [
+                  { id: '2603280001', category: 'Alumbrado Público', description: 'Farol roto en plaza central (frente a la fuente)', address: 'Plaza San Martin', user_name: 'Jorge Rossi', user_role: 'vecino', status: 'PENDING', date: now.toISOString(), priority: true, location: { lat: -33.0858, lng: -64.2934 } },
+                  { id: '2603200001', category: 'Residuos', description: 'Acumulación de ramas en vereda comercial', address: 'Alem 400', user_name: 'Panaderia Las Flores', user_role: 'comercio', status: 'IN_PROGRESS', date: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(), location: { lat: -33.0868, lng: -64.2944 } },
+                  { id: '2603150001', category: 'Servicios Sanitarios', description: 'Olor a cloaca persistente en esquina del hospital', address: 'Calle 5 y Rivadavia', user_name: 'Hogar San José', user_role: 'institucion', status: 'RESOLVED', date: new Date(now.getTime() - 12 * 24 * 60 * 60 * 1000).toISOString(), location: { lat: -33.0878, lng: -64.2954 } },
+                  { id: '2603100001', category: 'Espacios Verdes', description: 'Mantenimiento de plaza barrial urgente', address: 'Barrio Municipal', user_name: 'Laura Mendez', user_role: 'vecino', status: 'PENDING', date: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(), location: { lat: -33.0888, lng: -64.2964 } },
+                  { id: '2603050001', category: 'Otros', description: 'Petición especial para evento barrial', address: 'Club Las Higueras', user_name: 'Comisión Directiva', user_role: 'institucion', status: 'REJECTED', rejection_reason: 'No corresponde a reclamo operativo', date: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString(), location: { lat: -33.0898, lng: -64.2974 } },
+                ];
+                localStorage.setItem('lh_claims', JSON.stringify(demoData));
+                window.location.reload();
+              }}
+              className="text-[10px] font-black opacity-30 hover:opacity-100 text-[#2ECC71] border border-[#2ECC71]/20 px-3 py-1.5 rounded-lg transition-all cursor-pointer uppercase tracking-widest"
+            >
+              ⚙️ Inicializar Datos Demo
+            </button>
+            <a 
+              href="/reclamo/nuevo" 
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-black text-[#2ECC71] tracking-[0.2em] transition-all flex items-center gap-2"
+            >
+              ➕ NUEVO RECLAMO (SIMULAR CIUDADANO)
+            </a>
+            <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 mr-4">
+               <button 
+                 onClick={() => {
+                   const user = { name: 'Pato García', role: 'intendente' };
+                   localStorage.setItem('lh_admin_user', JSON.stringify(user));
+                   setCurrentUser(user);
+                 }}
+                 className={`px-3 py-1.5 text-[9px] font-black rounded-lg transition-all ${currentUser?.role === 'intendente' ? 'bg-[#9B59B6] text-white shadow-lg' : 'text-white/30 hover:text-white/50'}`}
+               >
+                 INTENDENTE
+               </button>
+               <button 
+                  onClick={() => {
+                    const user = { name: 'Gestor Alumbrado', role: 'gestor' };
+                    localStorage.setItem('lh_admin_user', JSON.stringify(user));
+                    setCurrentUser(user);
+                  }}
+                  className={`px-3 py-1.5 text-[9px] font-black rounded-lg transition-all ${currentUser?.role === 'gestor' ? 'bg-white/10 text-white shadow-lg' : 'text-white/30 hover:text-white/50'}`}
+               >
+                 GESTOR DE SERVICIOS
+               </button>
+            </div>
+            <MetricItem label="PENDIENTES" value={metrics.pending} color="#E74C3C" />
+            <MetricItem label="EN PROCESO" value={metrics.inProgress} color="#F1C40F" />
+            <MetricItem label="RESUELTOS" value={metrics.resolved} color="#2ECC71" />
+            <MetricItem label="PRIORIDADES" value={metrics.priorities} color="#9B59B6" />
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-200px)]">
+          <aside className="lg:col-span-4 flex flex-col gap-4 overflow-hidden">
+            <div className="glass-card glass-card-static p-6 border-none flex flex-col gap-5 shrink-0">
+               <div className="space-y-4">
+                 <p className="text-[10px] font-black text-[#2ECC71] tracking-widest uppercase ml-1">Filtros Avanzados</p>
+                 <div className="grid grid-cols-1 gap-3">
+                   <div className="grid grid-cols-2 gap-2">
+                     <select 
+                       value={statusFilter}
+                       onChange={(e) => setStatusFilter(e.target.value)}
+                       className="bg-black/40 border border-white/10 text-white text-[11px] font-bold rounded-xl px-3 py-3"
+                     >
+                       <option value="all">TODOS LOS ESTADOS</option>
+                       <option value="PENDING">PENDIENTES</option>
+                       <option value="IN_PROGRESS">EN PROCESO</option>
+                       <option value="RESOLVED">RESUELTOS</option>
+                       <option value="REJECTED">RECHAZADOS</option>
+                     </select>
+                     <select 
+                       value={categoryFilter}
+                       onChange={(e) => setCategoryFilter(e.target.value)}
+                       className="bg-black/40 border border-white/10 text-white text-[11px] font-bold rounded-xl px-3 py-3"
+                     >
+                        <option value="all">TODAS CATEGORÍAS</option>
+                        <option value="Alumbrado Público">ALUMBRADO</option>
+                        <option value="Calles y Veredas">CALLES / BACHES</option>
+                        <option value="Agua y Cloacas">AGUA / CLOACAS</option>
+                        <option value="Residuos">RESIDUOS</option>
+                        <option value="Espacios Verdes">ESPACIOS VERDES</option>
+                        <option value="Servicios Sanitarios">SERVICIOS SANITARIOS</option>
+                        <option value="Otros">OTROS</option>
+                     </select>
+                   </div>
+                   <div className="grid grid-cols-2 gap-2">
+                     <select 
+                       value={roleFilter}
+                       onChange={(e) => setRoleFilter(e.target.value)}
+                       className="bg-black/40 border border-white/10 text-white text-[11px] font-bold rounded-xl px-3 py-3"
+                     >
+                       <option value="all">TODOS LOS ROLES</option>
+                       <option value="vecino">VECINOS</option>
+                       <option value="comercio">COMERCIOS</option>
+                       <option value="institucion">INSTITUCIONES</option>
+                     </select>
+                     <select 
+                       value={timeFilter}
+                       onChange={(e) => setTimeFilter(e.target.value)}
+                       className="bg-black/40 border border-white/10 text-white text-[11px] font-bold rounded-xl px-4 py-3"
+                     >
+                       <option value="all">TODO EL TIEMPO</option>
+                       <option value="today">HOY</option>
+                       <option value="week">ESTA SEMANA</option>
+                       <option value="month">ESTE MES</option>
+                       <option value="year">ÚLTIMO AÑO</option>
+                     </select>
+                   </div>
+                 </div>
+               </div>
+
+               <div className="pt-2 border-t border-white/5">
+                  <p className="text-[10px] font-black text-white/40 tracking-widest uppercase mb-4 ml-1">Distribución Actual</p>
+                  <div className="space-y-3">
+                     <StatBar label="Resueltos" value={metrics.resolved} total={metrics.total} color="#2ECC71" />
+                     <StatBar label="En Proceso" value={metrics.inProgress} total={metrics.total} color="#F1C40F" />
+                     <StatBar label="Pendientes" value={metrics.pending} total={metrics.total} color="#E74C3C" />
+                     <StatBar label="Rechazados" value={metrics.rejected} total={metrics.total} color="rgba(255,255,255,0.4)" />
+                  </div>
+               </div>
+            </div>
+
+            <div className="flex-1 flex flex-col gap-3 overflow-hidden">
+              <div className="flex justify-between items-center px-4 shrink-0">
+                <h2 className="text-sm font-black text-white/80 uppercase tracking-wider">Lista de Reclamos</h2>
+                <span className="text-[10px] text-white/30 font-bold">{filteredClaims.length} REPORTES</span>
+              </div>
+              
+              <div 
+                 id="claims-list"
+                 className="flex-1 overflow-y-auto overflow-x-hidden pr-2 space-y-3 custom-scrollbar"
+               >
+                {filteredClaims.map((claim) => (
+                  <div 
+                    key={claim.id}
+                    onClick={() => handleSelectClaim(claim)}
+                    className={`group relative flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${selectedClaim?.id === claim.id ? 'bg-[#2ECC71]/10 border-[#2ECC71]/30 shadow-lg' : 'bg-black/20 border-white/5 hover:bg-white/5 hover:border-white/10'}`}
+                  >
+                    
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-black text-[#2ECC71] tracking-widest">{claim.id}</span>
+                        {claim.priority && (
+                          <span className="bg-[#9B59B6] text-white text-[8px] font-black px-2 py-0.5 rounded-md border border-white/20 shadow-md">
+                            PRIORIDAD
+                          </span>
+                        )}
+                        <span className="text-[11px] font-black text-white shrink-0">{claim.date}</span>
+                      </div>
+                      {/* Swapped: Name as Title */}
+                      <p className="text-sm font-black text-white uppercase tracking-tight leading-none mb-1">
+                        {claim.user_name}
+                      </p>
+                      {/* Swapped: Category as Subtitle */}
+                      <p className="text-[10px] text-white/50 truncate flex items-center gap-1.5">
+                         <span className="text-[#2ECC71] font-black uppercase px-2 py-0.5 bg-[#2ECC71]/10 rounded-md">{claim.category}</span>
+                         <span className="text-white/10">|</span> 📍 {claim.address}
+                      </p>
+                      <div className="flex justify-between items-center pt-2">
+                        <p className="text-[9px] text-white/20 truncate uppercase font-black tracking-widest italic flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/20"></span> {claim.user_role}
+                        </p>
+                        <div className={`w-2 h-2 rounded-full shadow-lg ${claim.status === 'RESOLVED' ? 'bg-[#2ECC71]' : claim.status === 'IN_PROGRESS' ? 'bg-[#F1C40F]' : claim.status === 'REJECTED' ? 'bg-white/40' : 'bg-[#E74C3C]'}`} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div className="pt-4 pb-20 flex justify-center">
+                   <button 
+                     onClick={() => {
+                        const list = document.getElementById('claims-list');
+                        list?.scrollTo({ top: 0, behavior: 'smooth' });
+                     }}
+                     className="bg-white/5 hover:bg-white/10 text-white/30 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] px-6 py-3 rounded-full border border-white/5 transition-all"
+                   >
+                     ↑ VOLVER AL INICIO
+                   </button>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <section className="lg:col-span-8 relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black">
+            {isLoaded ? (
+              <GoogleMap
+                mapContainerStyle={{ width: '100%', height: '100% ' }}
+                center={mapCenter}
+                zoom={mapZoom}
+                options={MAP_OPTIONS}
+              >
+                {filteredClaims.filter(c => c.location).map((claim) => (
+                  <Marker
+                    key={'marker-' + claim.id}
+                    position={claim.location}
+                    onClick={() => handleSelectClaim(claim)}
+                    icon={{
+                      path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                      fillColor: claim.status === 'RESOLVED' ? '#2ECC71' : claim.status === 'IN_PROGRESS' ? '#F1C40F' : '#E74C3C',
+                      fillOpacity: 1,
+                      strokeWeight: 2,
+                      strokeColor: '#FFFFFF',
+                      scale: 1.5,
+                      anchor: new google.maps.Point(12, 24),
+                    }}
+                  />
+                ))}
+              </GoogleMap>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white/20 italic">Cargando Mapa...</div>
+            )}
+
+            <AnimatePresence>
+              {selectedClaim && (
+                  <motion.div 
+                    initial={{ x: 600, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: 600, opacity: 0 }}
+                    className="absolute top-10 right-10 bottom-10 w-[600px] bg-[#0F172A]/98 backdrop-blur-3xl rounded-3xl border border-white/20 shadow-[0_0_120px_rgba(0,0,0,1)] overflow-hidden flex flex-col z-50 transition-all duration-300"
+                  >
+                  <div 
+                    style={{ paddingLeft: '32px', paddingTop: '32px', paddingRight: '32px', paddingBottom: '24px' }}
+                    className="border-b border-white/10 flex justify-between items-center bg-white/5 transition-all"
+                  >
+                    <div className="space-y-2 max-w-[80%]">
+                      <div className="flex items-center gap-3">
+                         <span className={`text-[10px] font-black px-4 py-1.5 rounded-lg backdrop-blur-md border border-white/10 ${selectedClaim.status === 'RESOLVED' ? 'bg-[#2ECC71]/30 text-[#2ECC71]' : selectedClaim.status === 'IN_PROGRESS' ? 'bg-[#F1C40F]/30 text-[#F1C40F]' : selectedClaim.status === 'REJECTED' ? 'bg-white/10 text-white/50' : 'bg-[#E74C3C]/30 text-[#E74C3C]'}`}>
+                           {selectedClaim.status === 'RESOLVED' ? 'RESUELTO' : selectedClaim.status === 'IN_PROGRESS' ? 'EN PROCESO' : selectedClaim.status === 'REJECTED' ? 'RECHAZADO' : 'PENDIENTE'}
+                         </span>
+                         <span className="text-[10px] font-black text-white/20 tracking-[0.3em]">EXP. #{selectedClaim.id}</span>
+                      </div>
+                      <h2 className="text-3xl font-black text-white tracking-widest uppercase leading-tight">{selectedClaim.user_name}</h2>
+                      <div className="flex items-center gap-2 text-white/30 text-[9px] font-black uppercase tracking-[0.2em]">
+                         <div className="w-4 h-[1px] bg-[#2ECC71]/60"></div> 
+                         <span>Ciudadano Informante</span>
+                      </div>
+                    </div>
+                    <button onClick={() => { setSelectedClaim(null); setShowRejection(false); }} className="text-white/40 hover:text-white transition-all bg-white/5 hover:bg-white/10 p-4 rounded-2xl shadow-xl group border border-white/5">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="group-hover:rotate-90 transition-transform duration-300"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+
+                  <div 
+                    style={{ paddingLeft: '32px', paddingRight: '32px', paddingTop: '32px', paddingBottom: '48px' }}
+                    className="flex-1 overflow-y-auto space-y-8 custom-scrollbar scroll-smooth"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-black/40 p-10 rounded-[2rem] border border-white/5 group transition-all">
+                        <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                           📌 Categoría
+                        </p>
+                        <p className="text-xl font-black text-white tracking-tight uppercase">{selectedClaim.category}</p>
+                        <div className="mt-4">
+                          <span className="text-[9px] font-black px-3 py-1.5 bg-white/5 rounded-lg text-white/40 uppercase tracking-[0.2em] border border-white/10">{selectedClaim.user_role}</span>
+                        </div>
+                      </div>
+                      <div className="bg-black/40 p-10 rounded-[2rem] border border-white/5 flex flex-col justify-center gap-6">
+                        <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em] mb-2 flex items-center gap-2">
+                          <span className="text-[#F1C40F]">⚡</span> Gestión
+                        </p>
+                        <button 
+                          onClick={(e) => {
+                            if (currentUser?.role !== 'intendente') return;
+                            handleTogglePriority(selectedClaim.id, e);
+                          }}
+                          disabled={currentUser?.role !== 'intendente'}
+                          className={`w-full py-4 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border transition-all duration-500 ${currentUser?.role !== 'intendente' ? 'opacity-30 cursor-not-allowed bg-black/20' : 'hover:scale-105 active:scale-95'} ${selectedClaim.priority ? 'bg-gradient-to-tr from-[#9B59B6] to-purple-400 text-white border-purple-400/50 shadow-purple-500/10' : 'bg-white/5 text-white/30 border-white/5 hover:bg-white/10'}`}
+                        >
+                          {currentUser?.role !== 'intendente' ? 'BLOQUEADO: SOLO INTENDENTE' : (selectedClaim.priority ? '★ PRIORIDAD ALTA' : 'SUBIR PRIORIDAD')}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-8">
+                       <div className="bg-black/40 p-10 rounded-[2rem] border border-white/5 group shadow-xl">
+                         <p className="text-[10px] text-white/20 font-black tracking-[0.3em] uppercase mb-6 flex items-center gap-2">
+                           <span className="text-[#1E5F9E]">📍</span> Ubicación Geográfica
+                         </p>
+                         <p className="text-xl font-black text-white tracking-tight">{selectedClaim.address}</p>
+                       </div>
+                       <div className="p-10 bg-black/40 rounded-[2rem] border border-white/5 shadow-xl">
+                         <p className="text-[10px] text-white/20 font-black tracking-[0.3em] uppercase mb-6 flex items-center gap-2">
+                           <span className="text-white/20">📝</span> Declaración del Vecino
+                         </p>
+                         <p className="text-base text-white/80 leading-relaxed font-medium">
+                           {selectedClaim.description}
+                         </p>
+                       </div>
+                    </div>
+
+                    <div className="space-y-4 px-2">
+                      <p className="text-[10px] text-white/30 font-black tracking-widest uppercase ml-4">Evidencia Capturada</p>
+                      <div 
+                        className={`relative rounded-2xl bg-black/40 overflow-hidden border border-white/10 cursor-zoom-in transition-all duration-700 ${isZoomed ? 'aspect-square scale-105 z-50 ring-4 ring-[#2ECC71] shadow-[0_0_80px_rgba(46,204,113,0.3)]' : 'aspect-video shadow-2xl'}`}
+                        onClick={() => setIsZoomed(!isZoomed)}
+                      >
+                        {selectedClaim.photo ? (
+                          <img src={selectedClaim.photo} className="w-full h-full object-cover" alt="Evidencia" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white/10 italic text-sm">Sin evidencia fotográfica</div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
+                        <div className="absolute bottom-6 left-6 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl text-white/70 text-[10px] font-black uppercase tracking-widest border border-white/10">
+                          {isZoomed ? 'Contraer' : 'Expandir Vista'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 pt-4 px-2">
+                      <p className="text-[10px] text-[#2ECC71] font-black tracking-widest uppercase ml-1">Observaciones de Gestión</p>
+                      <textarea 
+                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white text-sm font-bold focus:outline-none focus:border-[#2ECC71] transition-all min-h-[120px] resize-none"
+                        placeholder="Escriba aquí los detalles de la resolución o derivación..."
+                        value={observation}
+                        onChange={(e) => setObservation(e.target.value)}
+                      />
+                      
+                      {showRejection ? (
+                        <div className="space-y-4 bg-red-500/10 p-6 rounded-2xl border border-red-500/20 animate-in fade-in slide-in-from-top-1">
+                          <p className="text-[10px] text-red-500 font-black uppercase tracking-widest flex items-center gap-2">
+                             🚫 Motivo del Rechazo (Obligatorio)
+                          </p>
+                          <textarea 
+                            className="w-full bg-black/40 border border-red-500/10 rounded-xl p-4 text-white text-xs font-bold focus:outline-none focus:border-red-500 transition-all min-h-[80px]"
+                            placeholder="Ej: Reclamo duplicado / No corresponde a jurisdicción..."
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                          />
+                          <div className="flex gap-3 mt-4">
+                             <button onClick={() => setShowRejection(false)} className="flex-1 bg-white/5 hover:bg-white/10 text-white/60 text-[10px] font-bold py-3 rounded-xl transition-all">CANCELAR</button>
+                             <button 
+                               onClick={() => handleStatusChange(selectedClaim.id, 'REJECTED', rejectionReason)}
+                               disabled={!rejectionReason}
+                               className="flex-1 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold py-3 rounded-xl shadow-lg shadow-red-500/20 transition-all disabled:opacity-50"
+                             >
+                                CONFIRMAR RECHAZO
+                             </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          {selectedClaim.status === 'PENDING' && (
+                            <button 
+                              onClick={() => handleStatusChange(selectedClaim.id, 'IN_PROGRESS')}
+                              disabled={!observation.trim()}
+                              className="w-full bg-[#F1C40F] hover:bg-[#D4AC0D] text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest transition-all shadow-xl shadow-yellow-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <span>⚡</span> Iniciar Gestión (En Proceso)
+                            </button>
+                          )}
+                          {selectedClaim.status === 'IN_PROGRESS' && (
+                            <button 
+                              onClick={() => handleStatusChange(selectedClaim.id, 'RESOLVED')}
+                              disabled={!observation.trim()}
+                              className="w-full bg-[#2ECC71] hover:bg-[#27AE60] text-white font-black py-4 rounded-xl text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <span>✅</span> Finalizar y Marcar Resuelto
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => setShowRejection(true)}
+                            className="w-full bg-white/5 hover:bg-white/10 text-white/40 hover:text-red-400 font-bold py-3 rounded-xl text-[10px] uppercase tracking-widest transition-all"
+                          >
+                            Rechazar Reclamo (No Corresponde)
+                          </button>
+                          {!observation.trim() && (
+                            <p className="text-[9px] text-white/20 text-center uppercase tracking-widest italic animate-pulse">
+                               * Complete las observaciones para habilitar acciones
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 text-white/60 text-[10px] font-bold flex gap-4">
+               <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#E74C3C]"></span> PENDIENTE</span>
+               <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#F1C40F]"></span> EN PROCESO</span>
+               <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#2ECC71]"></span> RESUELTO</span>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function StatBar({ label, value, total, color }: { label: string, value: number, total: number, color: string }) {
+  const percentage = total > 0 ? (value / total) * 100 : 0;
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider">
+        <span className="text-white/50">{label}</span>
+        <span style={{ color }}>{value}</span>
+      </div>
+      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+        <motion.div 
+          initial={{ width: 0 }}
+          animate={{ width: `${percentage}%` }}
+          transition={{ duration: 1, ease: 'easeOut' }}
+          className="h-full rounded-full"
+          style={{ backgroundColor: color }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function MetricItem({ label, value, color }: { label: string, value: number, color: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-[8px] font-black text-white/30 tracking-[0.2em] mb-1">{label}</span>
+      <span className="text-2xl font-black" style={{ color }}>{value}</span>
+    </div>
+  );
+}

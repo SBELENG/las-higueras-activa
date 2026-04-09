@@ -1,0 +1,365 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-heading: 'Montserrat', sans-serif;
+}
+
+:root {
+  --color-bg-deep: #0A192F;
+  --color-primary: #1E5F9E;
+  --color-accent: #2ECC71;
+  
+  /* Glassmorphism Refined Specs - Increased Opacity for readability */
+  --glass-bg: rgba(255, 255, 255, 0.12);
+  --glass-blur: blur(16px) saturate(180%);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-radius: 28px;
+  --glass-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+  
+  /* Readability Overlay - Slightly lighter for better visibility across browsers */
+  --overlay-dark: rgba(0, 0, 0, 0.55);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-bg-deep);
+  color: white;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* More reliable background for mobile browsers */
+.app-background-image {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/assets/foto-fondo.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -2;
+}
+
+/* Global Dark Overlay for Contrast */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--overlay-dark);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Glass Card System (Refined) */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur); /* Safari and iOS support */
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  padding: 2rem; /* Initial fallback padding */
+  padding: clamp(1.5rem, 5vw, 3rem); /* Responsive fluid padding */
+}
+
+@media (min-width: 768px) {
+  .glass-card {
+    padding: 3.5rem; /* ~56px for desktop */
+  }
+}
+
+/* Inner card darkening for readability */
+.glass-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25); /* More inner darkening */
+  z-index: -1;
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.03);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+}
+
+.glass-card-static {
+  pointer-events: auto !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.glass-card-static:hover {
+  transform: none !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+.text-shadow {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.icon-container {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Onboarding / Splash Screen Styles */
+.splash-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+
+.splash-logo {
+  margin-bottom: 2rem;
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
+  border-radius: 20%;
+}
+
+.splash-title {
+  font-size: 2.75rem;
+  color: #FFFFFF !important; /* Force white for non-gradient support */
+  background: linear-gradient(to bottom, #FFFFFF 0%, #D1E1F3 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  text-align: center;
+  line-height: 1.15;
+  padding-bottom: 0.5rem;
+  overflow: visible;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Improved input visibility */
+input, textarea {
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  font-weight: 500;
+  color: white;
+}
+
+input:focus, textarea:focus {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.2);
+}
+
+::placeholder {
+  color: rgba(255, 255, 255, 0.3) !important;
+  font-weight: 400;
+}
+
+/* Step Indicator Styles (Missing previously) */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 1rem;
+  margin-bottom: 2rem;
+}
+
+.step-indicator-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  position: relative;
+}
+
+.step-indicator-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.step-pending {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.step-active {
+  background: var(--color-accent);
+  color: white;
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+}
+
+.step-done {
+  background: rgba(46, 204, 113, 0.2);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+}
+
+.step-indicator-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.step-label-active {
+  color: white;
+}
+
+.step-indicator-line {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+
+.step-line-done {
+  background: var(--color-accent);
+}
+
+.splash-subtitle {
+  color: #FFFFFF !important;
+  font-size: 1.125rem;
+  font-weight: 500;
+  max-width: 20rem;
+  margin: 0 auto 3.5rem auto;
+  line-height: 1.6;
+  text-align: center;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  opacity: 0.95;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-accent), #27AE60);
+  color: white;
+  padding: 1.25rem 2rem;
+  border-radius: 24px;
+  font-weight: 700;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  box-shadow: 0 10px 25px -5px rgba(46, 204, 113, 0.4);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-primary:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 15px 35px -5px rgba(46, 204, 113, 0.6);
+}
+
+.btn-primary:active {
+  transform: scale(0.96);
+}
+
+/* Animations and Utilities */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Status Badge Styles */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid transparent;
+}
+
+.status-badge-sm {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.55rem;
+}
+
+.status-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* Custom Modern Scrollbar - Ultra Thin */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(46, 204, 113, 0.4);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(46, 204, 113, 0.3) rgba(255, 255, 255, 0.05);
+}
