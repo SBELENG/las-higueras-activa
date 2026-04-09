@@ -7,13 +7,13 @@ import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 
 import { MAP_OPTIONS } from '@/config/mapStyle';
 
-const INITIAL_CENTER = { lat: -33.085, lng: -64.35 };
-
 const USER_ROLES = [
   { id: 'vecino', label: 'Vecino común', icon: '🏠' },
   { id: 'comercio', label: 'Comercio', icon: '🏪' },
-  { id: 'institucion', label: 'Institución / Asociación', icon: '🏛️' },
+  { id: 'institucion', label: 'Institución / Asociación', icon: '🏛️' }
 ];
+
+const INITIAL_CENTER = { lat: -33.0858, lng: -64.2934 }; // Centro exacto Las Higueras
 
 export default function LoginPage() {
   const router = useRouter();
@@ -259,7 +259,7 @@ export default function LoginPage() {
                     {USER_ROLES.map((uRole) => (
                       <label 
                         key={uRole.id}
-                        className={`flex items-center gap-6 p-6 rounded-2xl border cursor-pointer transition-all ${
+                        className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
                           role === uRole.id 
                             ? 'bg-white/10 border-[#2ECC71] shadow-[0_0_15px_rgba(46,204,113,0.2)]' 
                             : 'bg-white/5 border-white/10 hover:border-white/30'
@@ -273,9 +273,9 @@ export default function LoginPage() {
                           checked={role === uRole.id}
                           onChange={(e) => setRole(e.target.value)}
                         />
-                        <span className="text-3xl">{uRole.icon}</span>
+                        <span className="text-2xl">{uRole.icon}</span>
                         <div className="flex-1">
-                          <p className="text-white font-bold">{uRole.label}</p>
+                          <p className="text-white font-bold text-sm">{uRole.label}</p>
                         </div>
                         {role === uRole.id && (
                           <div className="w-5 h-5 rounded-full bg-[#2ECC71] flex items-center justify-center">

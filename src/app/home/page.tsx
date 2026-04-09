@@ -58,9 +58,9 @@ export default function HomePage() {
     },
     {
       id: 'admin',
-      title: 'Panel de Gestión',
-      subtitle: 'Acceso para administración',
-      icon: '⚙️',
+      title: 'Gestor Municipal',
+      subtitle: 'Acceso privado para administración',
+      icon: '🛡️',
       accent: '#9B59B6',
       href: '/admin'
     }
@@ -108,7 +108,7 @@ export default function HomePage() {
             className="grid grid-cols-1 gap-6"
           >
             {menuItems
-              .filter(item => item.id !== 'admin' || userData.role === 'admin')
+              .filter(item => item.id !== 'admin' || userData.role === 'admin' || userData.role === 'gestor' || userData.role === 'intendente')
               .map((item) => (
               <motion.div key={item.id} variants={itemVariants}>
                 <GlassCard 

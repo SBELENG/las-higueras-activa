@@ -167,50 +167,10 @@ export default function AdminDashboardPage() {
             <p className="text-[#2ECC71] text-[10px] font-bold tracking-[0.2em] uppercase">Monitoreo de Gestión Municipal — Las Higueras</p>
           </div>
           <div className="flex gap-8">
-            <button 
-              onClick={() => {
-                const now = new Date();
-                const demoData = [
-                  { id: '2603280001', category: 'Alumbrado Público', description: 'Farol roto en plaza central (frente a la fuente)', address: 'Plaza San Martin', user_name: 'Jorge Rossi', user_role: 'vecino', status: 'PENDING', date: now.toISOString(), priority: true, location: { lat: -33.0858, lng: -64.2934 } },
-                  { id: '2603200001', category: 'Residuos', description: 'Acumulación de ramas en vereda comercial', address: 'Alem 400', user_name: 'Panaderia Las Flores', user_role: 'comercio', status: 'IN_PROGRESS', date: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(), location: { lat: -33.0868, lng: -64.2944 } },
-                  { id: '2603150001', category: 'Servicios Sanitarios', description: 'Olor a cloaca persistente en esquina del hospital', address: 'Calle 5 y Rivadavia', user_name: 'Hogar San José', user_role: 'institucion', status: 'RESOLVED', date: new Date(now.getTime() - 12 * 24 * 60 * 60 * 1000).toISOString(), location: { lat: -33.0878, lng: -64.2954 } },
-                  { id: '2603100001', category: 'Espacios Verdes', description: 'Mantenimiento de plaza barrial urgente', address: 'Barrio Municipal', user_name: 'Laura Mendez', user_role: 'vecino', status: 'PENDING', date: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(), location: { lat: -33.0888, lng: -64.2964 } },
-                  { id: '2603050001', category: 'Otros', description: 'Petición especial para evento barrial', address: 'Club Las Higueras', user_name: 'Comisión Directiva', user_role: 'institucion', status: 'REJECTED', rejection_reason: 'No corresponde a reclamo operativo', date: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString(), location: { lat: -33.0898, lng: -64.2974 } },
-                ];
-                localStorage.setItem('lh_claims', JSON.stringify(demoData));
-                window.location.reload();
-              }}
-              className="text-[10px] font-black opacity-30 hover:opacity-100 text-[#2ECC71] border border-[#2ECC71]/20 px-3 py-1.5 rounded-lg transition-all cursor-pointer uppercase tracking-widest"
-            >
-              ⚙️ Inicializar Datos Demo
-            </button>
-            <a 
-              href="/reclamo/nuevo" 
-              className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-black text-[#2ECC71] tracking-[0.2em] transition-all flex items-center gap-2"
-            >
-              ➕ NUEVO RECLAMO (SIMULAR CIUDADANO)
-            </a>
-            <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 mr-4">
-               <button 
-                 onClick={() => {
-                   const user = { name: 'Pato García', role: 'intendente' };
-                   localStorage.setItem('lh_admin_user', JSON.stringify(user));
-                   setCurrentUser(user);
-                 }}
-                 className={`px-3 py-1.5 text-[9px] font-black rounded-lg transition-all ${currentUser?.role === 'intendente' ? 'bg-[#9B59B6] text-white shadow-lg' : 'text-white/30 hover:text-white/50'}`}
-               >
-                 INTENDENTE
-               </button>
-               <button 
-                  onClick={() => {
-                    const user = { name: 'Gestor Alumbrado', role: 'gestor' };
-                    localStorage.setItem('lh_admin_user', JSON.stringify(user));
-                    setCurrentUser(user);
-                  }}
-                  className={`px-3 py-1.5 text-[9px] font-black rounded-lg transition-all ${currentUser?.role === 'gestor' ? 'bg-white/10 text-white shadow-lg' : 'text-white/30 hover:text-white/50'}`}
-               >
-                 GESTOR DE SERVICIOS
-               </button>
+            <div className="flex bg-black/40 p-1 px-4 rounded-xl border border-white/5 mr-4 items-center">
+               <span className="text-[10px] font-black text-white/50 tracking-widest uppercase">
+                 Sesión Administrador: <span className="text-[#2ECC71]">{currentUser?.name || 'Gestor'}</span>
+               </span>
             </div>
             <MetricItem label="PENDIENTES" value={metrics.pending} color="#E74C3C" />
             <MetricItem label="EN PROCESO" value={metrics.inProgress} color="#F1C40F" />
