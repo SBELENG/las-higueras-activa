@@ -2,13 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import dynamic from 'next/dynamic';
+import { useJsApiLoader } from '@react-google-maps/api';
+
+const GoogleMap = dynamic(() => import('@react-google-maps/api').then(mod => mod.GoogleMap), { ssr: false });
+const Marker = dynamic(() => import('@react-google-maps/api').then(mod => mod.Marker), { ssr: false });
 
 import { MAP_OPTIONS } from '@/config/mapStyle';
 
 const INITIAL_CENTER = { lat: -33.0858, lng: -64.2934 }; // Centro de Las Higueras
 
 export default function AdminDashboardPage() {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+
   const [claims, setClaims] = useState<any[]>([]);
   const [filteredClaims, setFilteredClaims] = useState<any[]>([]);
   const [selectedClaim, setSelectedClaim] = useState<any>(null);
@@ -19,6 +26,8 @@ export default function AdminDashboardPage() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
   const [timeFilter, setTimeFilter] = useState('all');
+
+  if (!isClient) return null;
   const [isZoomed, setIsZoomed] = useState(false);
   const [mapCenter, setMapCenter] = useState(INITIAL_CENTER);
   const [mapZoom, setMapZoom] = useState(14);
@@ -155,6 +164,19 @@ export default function AdminDashboardPage() {
       setMapZoom(17);
     }
   };
+
+  const getMarkerIcon = React.useCallback((status: string) => {
+    if (typeof google === 'undefined') return undefined;
+    return {
+      path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+      fillColor: status === 'RESOLVED' ? '#2ECC71' : status === 'IN_PROGRESS' ? '#F1C40F' : '#E74C3C',
+      fillOpacity: 1,
+      strokeWeight: 2,
+      strokeColor: '#FFFFFF',
+      scale: 1.5,
+      anchor: new google.maps.Point(12, 24),
+    };
+  }, [isLoaded]);
 
   return (
     <main className="min-h-screen relative p-4 md:p-8 flex flex-col items-center">
@@ -322,15 +344,7 @@ export default function AdminDashboardPage() {
                     key={'marker-' + claim.id}
                     position={claim.location}
                     onClick={() => handleSelectClaim(claim)}
-                    icon={{
-                      path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                      fillColor: claim.status === 'RESOLVED' ? '#2ECC71' : claim.status === 'IN_PROGRESS' ? '#F1C40F' : '#E74C3C',
-                      fillOpacity: 1,
-                      strokeWeight: 2,
-                      strokeColor: '#FFFFFF',
-                      scale: 1.5,
-                      anchor: typeof google !== 'undefined' ? new google.maps.Point(12, 24) : undefined,
-                    }}
+                    icon={getMarkerIcon(claim.status)}
                   />
                 ))}
               </GoogleMap>

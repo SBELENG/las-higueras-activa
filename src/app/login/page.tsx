@@ -3,7 +3,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import dynamic from 'next/dynamic';
+import { useJsApiLoader } from '@react-google-maps/api';
+
+// Carga dinámica de componentes de mapas para evitar errores de SSR en Vercel
+const GoogleMap = dynamic(() => import('@react-google-maps/api').then(mod => mod.GoogleMap), { ssr: false });
+const Marker = dynamic(() => import('@react-google-maps/api').then(mod => mod.Marker), { ssr: false });
 
 import { MAP_OPTIONS } from '@/config/mapStyle';
 
@@ -17,7 +22,13 @@ const INITIAL_CENTER = { lat: -33.0858, lng: -64.2934 }; // Centro exacto Las Hi
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isClient, setIsClient] = React.useState(false);
   const [step, setStep] = useState(1); // 1: Phone, 2: Profile
+  
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [dni, setDni] = useState('');
@@ -25,6 +36,9 @@ export default function LoginPage() {
   const [address, setAddress] = useState('');
   const [location, setLocation] = useState(INITIAL_CENTER);
   const [role, setRole] = useState('');
+
+  // Sigo con el resto pero protegiendo el render inicial
+  if (!isClient) return null;
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -74,6 +88,19 @@ export default function LoginPage() {
     }
   };
 
+  const markerIcon = React.useMemo(() => {
+    if (typeof google === 'undefined') return undefined;
+    return {
+      path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+      fillColor: '#2ECC71',
+      fillOpacity: 1,
+      strokeWeight: 2,
+      strokeColor: '#FFFFFF',
+      scale: 1.5,
+      anchor: new google.maps.Point(12, 24),
+    };
+  }, [isLoaded]);
+
   return (
     <main className="min-h-screen relative p-6 flex items-center justify-center">
       <div className="app-bg"></div>
@@ -86,17 +113,12 @@ export default function LoginPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="glass-card space-y-12 relative flex flex-col"
+              className="glass-card space-y-8 w-full"
             >
-              {/* Back to Onboarding */}
-              <button 
-                onClick={() => router.push('/')}
-                className="absolute top-10 left-10 text-white/40 hover:text-white transition-colors"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6"/></svg>
-              </button>
-
-              <div className="text-center space-y-4 pt-4">
+              <div className="text-center space-y-2">
+                <div className="flex justify-center mb-6">
+                  <img src="/assets/logo.svg" alt="Las Higueras Activa" className="h-16 w-auto drop-shadow-2xl" />
+                </div>
                 <h1 className="text-3xl font-bold text-white text-shadow tracking-tight">Identificación</h1>
                 <p className="text-white/50 text-sm">Tu puerta de confianza a Las Higueras</p>
               </div>
@@ -150,58 +172,59 @@ export default function LoginPage() {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6"/></svg>
               </button>
 
-              <div className="text-center space-y-4 pt-4">
-                <h1 className="text-2xl font-bold text-white text-shadow tracking-tight">Completar Perfil</h1>
-                <p className="text-white/50 text-sm">Contanos un poco sobre vos</p>
+              <div className="text-center space-y-2">
+                <h1 className="text-2xl font-bold text-white text-shadow">Completar Perfil</h1>
+                <p className="text-white/50 text-xs uppercase tracking-widest font-medium">Contanos un poco sobre vos</p>
               </div>
 
-              <form onSubmit={handleFinishProfile} className="space-y-12">
-                <div className="space-y-4">
-                  <label className="text-white/70 text-xs font-bold uppercase tracking-widest ml-1">Tu Nombre</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Escribí tu nombre"
-                    className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
+              <form onSubmit={handleFinishProfile} className="space-y-8">
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Tu Nombre</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Escribí tu nombre"
+                      className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
 
-                <div className="space-y-4">
-                  <label className="text-white/70 text-xs font-bold uppercase tracking-widest ml-1">DNI</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Tu DNI sin puntos"
-                    className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
-                    value={dni}
-                    onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))}
-                  />
-                </div>
+                  <div className="space-y-4">
+                    <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">DNI</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Tu DNI sin puntos"
+                      className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
+                      value={dni}
+                      onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))}
+                    />
+                  </div>
 
-                <div className="space-y-4">
-                  <label className="text-white/70 text-xs font-bold uppercase tracking-widest ml-1">Dirección Exacta</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej: Calle San Martín 123"
-                    className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                  />
-                </div>
+                  <div className="space-y-4">
+                    <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Dirección Exacta</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ej: Calle San Martín 123"
+                      className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                    />
+                  </div>
 
-                <div className="space-y-4">
-                  <label className="text-white/70 text-xs font-bold uppercase tracking-widest ml-1">Barrio / Zona (Opcional)</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: Barrio San Alberto"
-                    className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
-                    value={barrio}
-                    onChange={(e) => setBarrio(e.target.value)}
-                  />
-                </div>
+                  <div className="space-y-4">
+                    <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Barrio / Zona (Opcional)</label>
+                    <input
+                      type="text"
+                      placeholder="Ej: Barrio San Alberto"
+                      className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
+                      value={barrio}
+                      onChange={(e) => setBarrio(e.target.value)}
+                    />
+                  </div>
 
                   <div className="w-full h-[300px] rounded-3xl overflow-hidden border border-white/10 bg-black/20 relative shadow-inner">
                     {isLoaded ? (
@@ -216,15 +239,7 @@ export default function LoginPage() {
                           position={location} 
                           draggable 
                           onDragEnd={(e) => e.latLng && setLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() })} 
-                          icon={{
-                            path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                            fillColor: '#2ECC71',
-                            fillOpacity: 1,
-                            strokeWeight: 2,
-                            strokeColor: '#FFFFFF',
-                            scale: 1.5,
-                            anchor: typeof google !== 'undefined' ? new google.maps.Point(12, 24) : undefined,
-                          }}
+                          icon={markerIcon}
                         />
                       </GoogleMap>
                     ) : (
@@ -286,6 +301,7 @@ export default function LoginPage() {
                         )}
                       </label>
                     ))}
+                  </div>
                   </div>
                 </div>
 
