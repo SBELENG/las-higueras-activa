@@ -14,8 +14,6 @@ const INITIAL_CENTER = { lat: -33.0858, lng: -64.2934 }; // Centro de Las Higuer
 
 export default function AdminDashboardPage() {
   const [isClient, setIsClient] = useState(false);
-  useEffect(() => setIsClient(true), []);
-
   const [claims, setClaims] = useState<any[]>([]);
   const [filteredClaims, setFilteredClaims] = useState<any[]>([]);
   const [selectedClaim, setSelectedClaim] = useState<any>(null);
@@ -26,22 +24,10 @@ export default function AdminDashboardPage() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
   const [timeFilter, setTimeFilter] = useState('all');
-
-  if (!isClient) return null;
   const [isZoomed, setIsZoomed] = useState(false);
   const [mapCenter, setMapCenter] = useState(INITIAL_CENTER);
   const [mapZoom, setMapZoom] = useState(14);
   const [currentUser, setCurrentUser] = useState<any>(null);
-
-  useEffect(() => {
-    const userStr = localStorage.getItem('lh_admin_user');
-    if (userStr) setCurrentUser(JSON.parse(userStr));
-    else {
-      // Por defecto para testing
-      setCurrentUser({ name: 'Gestor Municipal', role: 'gestor' });
-    }
-  }, []);
-  
   const [metrics, setMetrics] = useState({
     total: 0,
     pending: 0,
@@ -55,6 +41,19 @@ export default function AdminDashboardPage() {
     id: 'google-map-script',
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || ''
   });
+
+  useEffect(() => setIsClient(true), []);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('lh_admin_user');
+    if (userStr) setCurrentUser(JSON.parse(userStr));
+    else {
+      // Por defecto para testing
+      setCurrentUser({ name: 'Gestor Municipal', role: 'gestor' });
+    }
+  }, []);
+
+  if (!isClient) return null;
 
   const loadData = () => {
     const allClaims = JSON.parse(localStorage.getItem('lh_claims') || '[]');

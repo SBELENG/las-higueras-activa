@@ -24,11 +24,6 @@ export default function LoginPage() {
   const router = useRouter();
   const [isClient, setIsClient] = React.useState(false);
   const [step, setStep] = useState(1); // 1: Phone, 2: Profile
-  
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [dni, setDni] = useState('');
@@ -36,9 +31,6 @@ export default function LoginPage() {
   const [address, setAddress] = useState('');
   const [location, setLocation] = useState(INITIAL_CENTER);
   const [role, setRole] = useState('');
-
-  // Sigo con el resto pero protegiendo el render inicial
-  if (!isClient) return null;
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -48,6 +40,13 @@ export default function LoginPage() {
     language: 'es',
     region: 'AR'
   });
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Sigo con el resto pero protegiendo el render inicial
+  if (!isClient) return null;
 
   const handleSendCode = (e: React.FormEvent) => {
     e.preventDefault();
