@@ -165,7 +165,6 @@ export default function AdminDashboardPage() {
   };
 
   const getMarkerIcon = React.useCallback((status: string) => {
-    if (typeof google === 'undefined') return undefined;
     return {
       path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
       fillColor: status === 'RESOLVED' ? '#2ECC71' : status === 'IN_PROGRESS' ? '#F1C40F' : '#E74C3C',
@@ -173,9 +172,9 @@ export default function AdminDashboardPage() {
       strokeWeight: 2,
       strokeColor: '#FFFFFF',
       scale: 1.5,
-      anchor: new google.maps.Point(12, 24),
+      anchor: { x: 12, y: 24 } as any,
     };
-  }, [isLoaded]);
+  }, []);
 
   return (
     <main className="min-h-screen relative p-4 md:p-8 flex flex-col items-center">

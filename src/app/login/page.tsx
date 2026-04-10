@@ -88,7 +88,7 @@ export default function LoginPage() {
   };
 
   const markerIcon = React.useMemo(() => {
-    if (typeof google === 'undefined') return undefined;
+    // Avoid using global google object directly for constructors to prevent crashes
     return {
       path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
       fillColor: '#2ECC71',
@@ -96,9 +96,10 @@ export default function LoginPage() {
       strokeWeight: 2,
       strokeColor: '#FFFFFF',
       scale: 1.5,
-      anchor: new google.maps.Point(12, 24),
+      // React Google Maps accepts plain objects for Point/Size
+      anchor: { x: 12, y: 24 } as any,
     };
-  }, [isLoaded]);
+  }, []);
 
   return (
     <main className="min-h-screen relative p-6 flex items-center justify-center">
