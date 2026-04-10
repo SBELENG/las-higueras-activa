@@ -3,12 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { useJsApiLoader } from '@react-google-maps/api';
-
-// Carga dinámica de componentes de mapas para evitar errores de SSR en Vercel
-const GoogleMap = dynamic(() => import('@react-google-maps/api').then(mod => mod.GoogleMap), { ssr: false });
-const Marker = dynamic(() => import('@react-google-maps/api').then(mod => mod.Marker), { ssr: false });
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 
 import { MAP_OPTIONS } from '@/config/mapStyle';
 
