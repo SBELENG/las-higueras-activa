@@ -5,10 +5,10 @@ export const dynamic = 'force-dynamic';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import dynamicNext from 'next/dynamic';
+import dynamicMap from 'next/dynamic';
 import { THEME } from '@/config/theme';
 
-const InteractiveMap = dynamicNext(() => import('@/components/InteractiveMap'), { 
+const InteractiveMap = dynamicMap(() => import('../../components/InteractiveMap'), { 
   ssr: false,
   loading: () => <div className="w-full h-full bg-black/20 animate-pulse rounded-2xl border border-white/5" />
 });

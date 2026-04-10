@@ -4,9 +4,9 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import dynamic from 'next/dynamic';
+import dynamicMap from 'next/dynamic';
 
-const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), { 
+const InteractiveMap = dynamicMap(() => import('../../components/InteractiveMap'), { 
   ssr: false,
   loading: () => <div className="w-full h-full bg-black/20 animate-pulse rounded-2xl border border-white/5" />
 });
