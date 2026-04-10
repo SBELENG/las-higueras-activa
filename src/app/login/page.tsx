@@ -5,9 +5,13 @@ export const dynamic = 'force-dynamic';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import dynamicNext from 'next/dynamic';
+import { THEME } from '@/config/theme';
 
-import { MAP_OPTIONS } from '@/config/mapStyle';
+const InteractiveMap = dynamicNext(() => import('@/components/InteractiveMap'), { 
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-black/20 animate-pulse rounded-2xl border border-white/5" />
+});
 
 const USER_ROLES = [
   { id: 'vecino', label: 'Vecino común', icon: '🏠' },
@@ -30,13 +34,6 @@ export default function LoginPage() {
   const [role, setRole] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || "",
-    language: 'es',
-    region: 'AR'
-  });
 
   React.useEffect(() => {
     setIsClient(true);
@@ -78,25 +75,21 @@ export default function LoginPage() {
     router.push('/home');
   };
 
-  const onMapClick = (e: any) => {
+  const onMarkerDragEnd = (e: any) => {
     if (e.latLng) {
       setLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() });
     }
   };
 
-  const markerIcon = React.useMemo(() => {
-    // Avoid using global google object directly for constructors to prevent crashes
-    return {
-      path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-      fillColor: '#2ECC71',
-      fillOpacity: 1,
-      strokeWeight: 2,
-      strokeColor: '#FFFFFF',
-      scale: 1.5,
-      // React Google Maps accepts plain objects for Point/Size
-      anchor: { x: 12, y: 24 } as any,
-    };
-  }, []);
+  const markerIcon = {
+    path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+    fillColor: '#2ECC71',
+    fillOpacity: 1,
+    strokeWeight: 2,
+    strokeColor: '#FFFFFF',
+    scale: 1.5,
+    anchor: { x: 12, y: 24 }
+  };
 
   return (
     <main className="min-h-screen relative p-6 flex items-center justify-center">
@@ -223,31 +216,18 @@ export default function LoginPage() {
                     />
                   </div>
 
-                  <div className="w-full h-[300px] rounded-3xl overflow-hidden border border-white/10 bg-black/20 relative shadow-inner">
-                    {isLoaded ? (
-                      <GoogleMap
-                        mapContainerStyle={{ width: '100%', height: '100%' }}
+                    <div className="w-full h-[300px] rounded-3xl overflow-hidden border border-white/10 bg-black/20 relative shadow-inner">
+                      <InteractiveMap 
                         center={location}
                         zoom={16}
-                        onClick={onMapClick}
-                        options={{...MAP_OPTIONS, zoomControl: true}}
-                      >
-                        <Marker 
-                          position={location} 
-                          draggable 
-                          onDragEnd={(e: any) => e.latLng && setLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() })} 
-                          icon={markerIcon as any}
-                        />
-                      </GoogleMap>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/20 italic text-xs">
-                        Cargando mapa...
+                        onMarkerDragEnd={onMarkerDragEnd}
+                        draggableMarker
+                        markerIcon={markerIcon}
+                      />
+                      <div className="absolute top-4 left-4 right-4 bg-black/80 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-xs font-bold text-white text-center shadow-xl pointer-events-none">
+                        📍 Toca el mapa para marcar donde vivís
                       </div>
-                    )}
-                    <div className="absolute top-4 left-4 right-4 bg-black/80 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-xs font-bold text-white text-center shadow-xl">
-                      📍 Toca el mapa para marcar donde vivís
                     </div>
-                  </div>
                   <div className="flex justify-center -mt-6 z-20 relative px-4">
                     <button 
                       type="button"

@@ -4,9 +4,12 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import dynamic from 'next/dynamic';
 
-import { MAP_OPTIONS } from '@/config/mapStyle';
+const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), { 
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-black/20 animate-pulse rounded-2xl border border-white/5" />
+});
 
 const INITIAL_CENTER = { lat: -33.0858, lng: -64.2934 }; // Centro de Las Higueras
 
@@ -33,13 +36,6 @@ export default function AdminDashboardPage() {
     resolved: 0,
     rejected: 0,
     priorities: 0
-  });
-
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '',
-    language: 'es',
-    region: 'AR'
   });
 
   useEffect(() => setIsClient(true), []);
@@ -330,25 +326,16 @@ export default function AdminDashboardPage() {
           </aside>
 
           <section className="lg:col-span-8 relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black">
-            {isLoaded ? (
-              <GoogleMap
-                mapContainerStyle={{ width: '100%', height: '100% ' }}
-                center={mapCenter}
-                zoom={mapZoom}
-                options={MAP_OPTIONS}
-              >
-                {filteredClaims.filter(c => c.location).map((claim) => (
-                  <Marker
-                    key={'marker-' + claim.id}
-                    position={claim.location}
-                    onClick={() => handleSelectClaim(claim)}
-                    icon={getMarkerIcon(claim.status)}
-                  />
-                ))}
-              </GoogleMap>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-white/20 italic">Cargando Mapa...</div>
-            )}
+            <InteractiveMap
+              center={mapCenter}
+              zoom={mapZoom}
+              markers={filteredClaims.filter(c => c.location).map(c => ({
+                id: c.id,
+                position: c.location,
+                status: c.status,
+                onClick: () => handleSelectClaim(c)
+              }))}
+            />
 
             <AnimatePresence>
               {selectedClaim && (
