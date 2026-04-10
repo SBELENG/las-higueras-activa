@@ -81,7 +81,7 @@ export default function LoginPage() {
     router.push('/home');
   };
 
-  const onMapClick = (e: google.maps.MapMouseEvent) => {
+  const onMapClick = (e: any) => {
     if (e.latLng) {
       setLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() });
     }
@@ -238,8 +238,8 @@ export default function LoginPage() {
                         <Marker 
                           position={location} 
                           draggable 
-                          onDragEnd={(e) => e.latLng && setLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() })} 
-                          icon={markerIcon}
+                          onDragEnd={(e: any) => e.latLng && setLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() })} 
+                          icon={markerIcon as any}
                         />
                       </GoogleMap>
                     ) : (
