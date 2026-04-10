@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
@@ -35,7 +37,9 @@ export default function AdminDashboardPage() {
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || ''
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '',
+    language: 'es',
+    region: 'AR'
   });
 
   useEffect(() => setIsClient(true), []);
