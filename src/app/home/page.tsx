@@ -91,7 +91,7 @@ export default function HomePage() {
 
   const handleLogout = () => {
     localStorage.removeItem('lh_activa_user');
-    router.push('/login');
+    router.push('/');
   };
 
   return (
