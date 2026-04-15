@@ -40,10 +40,12 @@ body {
 /* More reliable background for mobile browsers */
 .app-background-image {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: -100px;
+  left: -50px;
+  right: -50px;
+  bottom: -100px;
+  width: auto;
+  height: auto;
   background-image: url('/assets/foto-fondo.webp');
   background-size: cover;
   background-position: center;
@@ -55,10 +57,12 @@ body {
 body::before {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: -100px;
+  left: -50px;
+  right: -50px;
+  bottom: -100px;
+  width: auto;
+  height: auto;
   background: var(--overlay-dark);
   z-index: -1;
   pointer-events: none;
