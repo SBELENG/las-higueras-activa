@@ -8,9 +8,11 @@ import { THEME } from '@/config/theme';
 export default function OnboardingPage() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    setHasSession(!!localStorage.getItem('lh_activa_user'));
   }, []);
 
   if (!isClient) return null;
@@ -90,6 +92,20 @@ export default function OnboardingPage() {
             </svg>
           </button>
         </div>
+
+        {hasSession && (
+          <button 
+            onClick={() => {
+              localStorage.removeItem('lh_activa_user');
+              setHasSession(false);
+              alert("Sesión borrada. Al hacer un reclamo se te volverán a pedir los datos.");
+            }}
+            className="mt-4 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
+          >
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+             Cerrar Sesión (Reiniciar Demo)
+          </button>
+        )}
 
         <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)' }}>
           Municipalidad de Las Higueras · Córdoba, Argentina
