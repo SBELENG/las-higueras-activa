@@ -7,24 +7,25 @@ import { THEME } from '@/config/theme';
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
+  // null = still checking | true = has session (redirecting) | false = no session (show splash)
+  const [sessionState, setSessionState] = useState<null | boolean>(null);
 
   useEffect(() => {
-    setIsClient(true);
-    
-    // Check if user is already logged in
     try {
       const savedUser = localStorage.getItem('lh_activa_user');
       if (savedUser) {
+        setSessionState(true);
         router.push('/home');
+      } else {
+        setSessionState(false);
       }
     } catch (e) {
-      console.error("Session check failed", e);
+      setSessionState(false);
     }
   }, [router]);
 
-  // Prevent hydration mismatch
-  if (!isClient) {
+  // While checking (or redirecting), show only a neutral spinner — never flash the splash
+  if (sessionState !== false) {
     return (
       <div className="splash-screen">
         <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin" />
@@ -32,6 +33,7 @@ export default function OnboardingPage() {
     );
   }
 
+  // Confirmed no session → show the full onboarding splash
   return (
     <div className="splash-screen relative overflow-hidden">
       {/* Decorative gradient blob */}
