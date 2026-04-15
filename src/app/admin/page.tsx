@@ -49,9 +49,7 @@ export default function AdminDashboardPage() {
     }
   }, []);
 
-  if (!isClient) return null;
-
-  const loadData = () => {
+  const loadData = React.useCallback(() => {
     const allClaims = JSON.parse(localStorage.getItem('lh_claims') || '[]');
     setClaims(allClaims);
     
@@ -93,11 +91,15 @@ export default function AdminDashboardPage() {
     });
 
     setFilteredClaims(filtered);
-  };
-
-  useEffect(() => {
-    loadData();
   }, [statusFilter, categoryFilter, roleFilter, timeFilter]);
+
+  // IMPORTANT: This useEffect must be BEFORE the conditional return to comply with React Rules of Hooks
+  useEffect(() => {
+    if (!isClient) return;
+    loadData();
+  }, [isClient, loadData]);
+
+  if (!isClient) return null;
 
   const handleTogglePriority = (claimId: string, e: any) => {
     e.stopPropagation();

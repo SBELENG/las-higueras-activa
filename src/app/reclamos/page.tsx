@@ -76,26 +76,34 @@ export default function MisReclamosPage() {
           >
             {claims.map((claim) => (
               <motion.div key={claim.id} variants={itemVariants}>
-                <div className="glass-card p-8 group hover:border-[#2ECC71]/30 transition-all">
-                  <div className="flex items-start justify-between mb-3">
+                <div className="glass-card p-6 group hover:border-[#2ECC71]/30 transition-all">
+                  {/* Header row: icon + category + status badge */}
+                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl">
+                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl shrink-0">
                         {getIconForCategory(claim.category)}
                       </div>
-                      <div>
-                        <h3 className="text-white font-bold leading-tight">{claim.category}</h3>
-                        <p className="text-white/40 text-[10px] uppercase font-bold tracking-widest">{claim.date}</p>
-                      </div>
+                      <h3 className="text-white font-bold leading-tight">{claim.category}</h3>
                     </div>
                     <StatusBadge status={claim.status as any} size="sm" />
                   </div>
-                  
-                  <div className="space-y-3">
+
+                  {/* Date row — separated clearly */}
+                  <div className="flex items-center gap-2 mb-3 pl-1">
+                    <span className="text-[10px] text-white/30">📅</span>
+                    <p className="text-white/40 text-[11px] font-semibold">
+                      {claim.date
+                        ? new Date(claim.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        : '—'}
+                    </p>
+                  </div>
+
+                  <div className="border-t border-white/5 pt-3 space-y-3">
                     <p className="text-white/70 text-sm line-clamp-2 italic">
-                      "{claim.description}"
+                      &quot;{claim.description}&quot;
                     </p>
                     
-                    <div className="flex items-center gap-2 text-white/40 text-xs border-t border-white/10 pt-3">
+                    <div className="flex items-center gap-2 text-white/40 text-xs">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                       {claim.address}
                     </div>

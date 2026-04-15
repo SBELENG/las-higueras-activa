@@ -8,11 +8,19 @@ import GlassHeader from '@/components/GlassHeader';
 
 export default function HomePage() {
   const router = useRouter();
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [userData, setUserData] = useState<{name: string, location: string, role?: string}>({
     name: "Vecino",
     location: "Las Higueras, Córdoba",
     role: "vecino"
   });
+
+  useEffect(() => {
+    try {
+      const msgs = JSON.parse(localStorage.getItem('lh_messages') || '[]');
+      setUnreadMessages(msgs.filter((m: any) => !m.read).length);
+    } catch (e) {}
+  }, []);
 
   useEffect(() => {
     try {
@@ -54,7 +62,7 @@ export default function HomePage() {
       icon: '📢',
       accent: '#F1C40F',
       href: '/mensajes',
-      badge: 3
+      badge: unreadMessages > 0 ? unreadMessages : undefined
     },
     {
       id: 'admin',

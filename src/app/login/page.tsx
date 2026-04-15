@@ -247,11 +247,11 @@ export default function LoginPage() {
 
                 <div className="space-y-6">
                   <label className="text-white/70 text-xs font-bold uppercase tracking-widest ml-1">¿Cómo te identificás?</label>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-5">
                     {USER_ROLES.map((uRole) => (
                       <label 
                         key={uRole.id}
-                        className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
+                        className={`flex items-center gap-5 p-5 rounded-2xl border cursor-pointer transition-all ${
                           role === uRole.id 
                             ? 'bg-white/10 border-[#2ECC71] shadow-[0_0_15px_rgba(46,204,113,0.2)]' 
                             : 'bg-white/5 border-white/10 hover:border-white/30'
@@ -265,12 +265,12 @@ export default function LoginPage() {
                           checked={role === uRole.id}
                           onChange={(e) => setRole(e.target.value)}
                         />
-                        <span className="text-2xl">{uRole.icon}</span>
+                        <span className="text-3xl">{uRole.icon}</span>
                         <div className="flex-1">
-                          <p className="text-white font-bold text-sm">{uRole.label}</p>
+                          <p className="text-white font-bold text-base">{uRole.label}</p>
                         </div>
                         {role === uRole.id && (
-                          <div className="w-5 h-5 rounded-full bg-[#2ECC71] flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-[#2ECC71] flex items-center justify-center shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
                               <polyline points="20 6 9 17 4 12" />
                             </svg>

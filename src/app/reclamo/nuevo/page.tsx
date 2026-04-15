@@ -40,8 +40,9 @@ export default function NuevoReclamoPage() {
   const [loading, setLoading] = useState(false);
   const [limitError, setLimitError] = useState(false);
 
-  // File input ref for camera
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  // File input refs
+  const cameraInputRef = React.useRef<HTMLInputElement>(null);
+  const galleryInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Check daily limit (MAX 3)
@@ -208,27 +209,58 @@ export default function NuevoReclamoPage() {
                   <label className="text-white/70 font-medium flex items-center gap-2">
                     📸 Foto del lugar {category?.critical && <span className="text-[#2ECC71] text-xs font-bold">(Obligatoria)</span>}
                   </label>
+
+                  {/* Hidden inputs */}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    capture="environment"
+                    className="hidden" 
+                    ref={cameraInputRef}
+                    onChange={handlePhotoUpload}
+                  />
                   <input 
                     type="file" 
                     accept="image/*" 
                     className="hidden" 
-                    ref={fileInputRef}
+                    ref={galleryInputRef}
                     onChange={handlePhotoUpload}
                   />
-                  <div 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full aspect-video bg-white/5 border-2 border-dashed border-white/20 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/10 transition-all overflow-hidden"
-                  >
-                    {photo ? (
+
+                  {/* Photo preview */}
+                  {photo ? (
+                    <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-[#2ECC71]/50 relative">
                       <img src={photo} alt="Vista previa" className="w-full h-full object-cover" />
-                    ) : (
-                      <>
-                        <span className="text-4xl text-white/40 mb-2">📸</span>
-                        <span className="text-white/60 text-sm font-semibold">Toca para capturar o subir foto</span>
-                        <span className="text-white/20 text-[10px] uppercase tracking-tighter">Cámara o Galería</span>
-                      </>
-                    )}
-                  </div>
+                      <button
+                        type="button"
+                        onClick={() => setPhoto(null)}
+                        className="absolute top-3 right-3 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/20 backdrop-blur-md"
+                      >
+                        ✕ Cambiar
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="flex flex-col items-center justify-center gap-3 p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#2ECC71]/50 transition-all cursor-pointer"
+                      >
+                        <span className="text-4xl">📷</span>
+                        <span className="text-white/80 text-sm font-bold">Tomar Foto</span>
+                        <span className="text-white/30 text-[10px] uppercase tracking-wider">Cámara</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => galleryInputRef.current?.click()}
+                        className="flex flex-col items-center justify-center gap-3 p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#2ECC71]/50 transition-all cursor-pointer"
+                      >
+                        <span className="text-4xl">🖼️</span>
+                        <span className="text-white/80 text-sm font-bold">Subir Foto</span>
+                        <span className="text-white/30 text-[10px] uppercase tracking-wider">Galería</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-10">
