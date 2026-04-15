@@ -95,7 +95,18 @@ export default function NuevoReclamoPage() {
       date: now.toISOString(), // ISO format for robust filtering
     };
 
-    localStorage.setItem('lh_claims', JSON.stringify([...claims, newClaim]));
+    try {
+      localStorage.setItem('lh_claims', JSON.stringify([...claims, newClaim]));
+    } catch (e) {
+      console.warn("Local storage full, attempting to clear space...");
+      if (claims.length > 10) {
+        const smallerClaims = claims.slice(-10);
+        localStorage.setItem('lh_claims', JSON.stringify([...smallerClaims, newClaim]));
+      } else {
+        newClaim.photo = null;
+        localStorage.setItem('lh_claims', JSON.stringify([...claims, newClaim]));
+      }
+    }
 
     setTimeout(() => {
       setLoading(false);
@@ -108,7 +119,36 @@ export default function NuevoReclamoPage() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhoto(reader.result as string);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800; // Constrain resolution to save local storage base64 text space
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= Math.round(MAX_WIDTH / width);
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= Math.round(MAX_HEIGHT / height);
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          // Compress to low quality JPEG to guarantee success under 5MB limit
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+          setPhoto(compressedDataUrl);
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
