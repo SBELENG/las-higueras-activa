@@ -40,9 +40,8 @@ export default function NuevoReclamoPage() {
   const [loading, setLoading] = useState(false);
   const [limitError, setLimitError] = useState(false);
 
-  // File input refs
-  const cameraInputRef = React.useRef<HTMLInputElement>(null);
-  const galleryInputRef = React.useRef<HTMLInputElement>(null);
+  // File input ref (single, handles both camera and gallery via OS native picker)
+  const photoInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Check daily limit (MAX 3)
@@ -210,24 +209,16 @@ export default function NuevoReclamoPage() {
                     📸 Foto del lugar {category?.critical && <span className="text-[#2ECC71] text-xs font-bold">(Obligatoria)</span>}
                   </label>
 
-                  {/* Hidden inputs */}
+                  {/* Single hidden input — OS shows native picker (camera or gallery) */}
                   <input 
                     type="file" 
-                    accept="image/*" 
-                    capture="environment"
+                    accept="image/*"
                     className="hidden" 
-                    ref={cameraInputRef}
-                    onChange={handlePhotoUpload}
-                  />
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    ref={galleryInputRef}
+                    ref={photoInputRef}
                     onChange={handlePhotoUpload}
                   />
 
-                  {/* Photo preview */}
+                  {/* Photo preview or single add-photo button */}
                   {photo ? (
                     <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-[#2ECC71]/50 relative">
                       <img src={photo} alt="Vista previa" className="w-full h-full object-cover" />
@@ -240,26 +231,15 @@ export default function NuevoReclamoPage() {
                       </button>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => cameraInputRef.current?.click()}
-                        className="flex flex-col items-center justify-center gap-3 p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#2ECC71]/50 transition-all cursor-pointer"
-                      >
-                        <span className="text-4xl">📷</span>
-                        <span className="text-white/80 text-sm font-bold">Tomar Foto</span>
-                        <span className="text-white/30 text-[10px] uppercase tracking-wider">Cámara</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => galleryInputRef.current?.click()}
-                        className="flex flex-col items-center justify-center gap-3 p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#2ECC71]/50 transition-all cursor-pointer"
-                      >
-                        <span className="text-4xl">🖼️</span>
-                        <span className="text-white/80 text-sm font-bold">Subir Foto</span>
-                        <span className="text-white/30 text-[10px] uppercase tracking-wider">Galería</span>
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => photoInputRef.current?.click()}
+                      className="w-full flex flex-col items-center justify-center gap-3 p-8 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#2ECC71]/50 transition-all cursor-pointer"
+                    >
+                      <span className="text-5xl">📷</span>
+                      <span className="text-white/80 text-sm font-bold">Agregar Foto</span>
+                      <span className="text-white/30 text-[10px] uppercase tracking-wider">Cámara o Galería</span>
+                    </button>
                   )}
                 </div>
 
