@@ -15,6 +15,17 @@ export default function OnboardingPage() {
 
   if (!isClient) return null;
 
+  const handleNavigation = (destination: string) => {
+    const savedUser = localStorage.getItem('lh_activa_user');
+    if (savedUser) {
+      router.push(destination);
+    } else {
+      // Pass the intended destination so they could be redirected later if we wanted, 
+      // but for now, just force them to login first.
+      router.push('/login');
+    }
+  };
+
   return (
     <div className="splash-screen relative overflow-hidden">
       {/* Decorative gradient blob */}
@@ -22,7 +33,7 @@ export default function OnboardingPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full"></div>
 
       <div
-        className="glass-card max-w-[90vw] md:max-w-xl mx-auto flex flex-col items-center gap-10 border-white/10 text-center"
+        className="glass-card max-w-[90vw] md:max-w-xl mx-auto flex flex-col items-center gap-10 border-white/10 text-center z-10"
       >
         <div>
           <Image
@@ -36,47 +47,61 @@ export default function OnboardingPage() {
         </div>
 
         <div className="space-y-4">
-          <h1
-            className="splash-title !mb-0 text-3xl md:text-5xl"
-          >
+          <h1 className="splash-title !mb-0 text-3xl md:text-5xl">
             Las Higueras Activa
           </h1>
 
-          <p
-            className="splash-subtitle !mb-0 mx-auto"
-          >
+          <p className="splash-subtitle !mb-0 mx-auto">
             Tu voz importa. Hacé tu reclamo en segundos y seguilo en tiempo real.
           </p>
         </div>
 
-        <div
-          className="w-full max-w-xs"
-        >
+        <div className="w-full max-w-sm flex flex-col gap-4">
           <button
-            className="btn-primary group"
-            onClick={() => router.push('/login')}
-            id="btn-start"
+            className="btn-primary group flex items-center justify-center gap-3 w-full"
+            onClick={() => handleNavigation('/reclamo/nuevo')}
           >
-            <span>Comienza tu reclamo</span>
-            <svg 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="3"
-              className="group-hover:translate-x-1 transition-transform"
-            >
+            <span className="text-xl">🚨</span>
+            <span className="flex-1 text-left">Hacer un Reclamo</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          <button
+            className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 shadow-lg group flex items-center justify-center gap-3 w-full transition-all"
+            onClick={() => handleNavigation('/reclamos')}
+          >
+            <span className="text-xl">🚥</span>
+            <span className="flex-1 text-left tracking-wide">Seguir mi Reclamo</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          <button
+            className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 shadow-lg group flex items-center justify-center gap-3 w-full transition-all"
+            onClick={() => handleNavigation('/mensajes')}
+          >
+            <span className="text-xl">📢</span>
+            <span className="flex-1 text-left tracking-wide">Ver Mensajes</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </button>
         </div>
 
-        <p
-          style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)' }}
-        >
+        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)' }}>
           Municipalidad de Las Higueras · Córdoba, Argentina
         </p>
+
+        {/* Acceso Administrador (Oculto sutilmente abajo) */}
+        <button 
+          onClick={() => router.push('/admin')}
+          className="absolute bottom-4 right-4 p-2 text-white/10 hover:text-white/30 transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </button>
       </div>
     </div>
   );
