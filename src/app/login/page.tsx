@@ -34,6 +34,7 @@ export default function LoginPage() {
   const [role, setRole] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   React.useEffect(() => {
     setIsClient(true);
@@ -60,7 +61,7 @@ export default function LoginPage() {
 
   const handleFinishProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !role || !address) return;
+    if (!name || !role || !address || !dni || !acceptedTerms) return;
 
     // Simulate saving profile and logging in
     localStorage.setItem('lh_activa_user', JSON.stringify({ 
@@ -282,10 +283,30 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <div className="pt-8">
+                <div className="pt-4 space-y-4">
+                  <label className="flex items-start gap-4 cursor-pointer p-4 bg-black/20 rounded-2xl border border-white/10 hover:border-white/30 transition-all">
+                    <div className="pt-0.5">
+                      <input 
+                        type="checkbox" 
+                        required
+                        className="w-5 h-5 accent-[#2ECC71] rounded shrink-0 cursor-pointer"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white/80 text-xs font-medium leading-relaxed">
+                        Acepto los términos, condiciones de uso y políticas de privacidad.
+                      </p>
+                      <p className="text-[#2ECC71]/60 text-[9px] font-black tracking-widest uppercase mt-2">
+                        Desarrollado por Ideas Digitales
+                      </p>
+                    </div>
+                  </label>
+
                   <button
                     type="submit"
-                    disabled={!name || !role || !address || !dni}
+                    disabled={!name || !role || !address || !dni || !acceptedTerms}
                     className="w-full bg-[#2ECC71] hover:bg-[#27AE60] disabled:opacity-50 text-white font-bold p-5 rounded-2xl shadow-lg transition-all transform active:scale-95"
                   >
                     Comenzar

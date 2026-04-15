@@ -181,13 +181,13 @@ export default function AdminDashboardPage() {
       <div className="app-bg"></div>
       
       <div className="w-full max-w-[1600px] space-y-6 z-10">
-        <header className="flex justify-between items-center bg-black/40 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl">
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-black/40 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl">
           <div>
             <h1 className="text-2xl font-black text-white tracking-tight uppercase">Panel de Control</h1>
             <p className="text-[#2ECC71] text-[10px] font-bold tracking-[0.2em] uppercase">Monitoreo de Gestión Municipal — Las Higueras</p>
           </div>
-          <div className="flex gap-8">
-            <div className="flex bg-black/40 p-1 px-4 rounded-xl border border-white/5 mr-4 items-center">
+          <div className="flex flex-wrap gap-4 lg:gap-8 w-full lg:w-auto items-center">
+            <div className="flex bg-black/40 p-2 px-4 rounded-xl border border-white/5 lg:mr-4 items-center w-full lg:w-auto justify-center mb-2 lg:mb-0">
                <span className="text-[10px] font-black text-white/50 tracking-widest uppercase">
                  Sesión Administrador: <span className="text-[#2ECC71]">{currentUser?.name || 'Gestor'}</span>
                </span>
@@ -199,7 +199,7 @@ export default function AdminDashboardPage() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-200px)]">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 h-auto lg:h-[calc(100vh-200px)]">
           <aside className="lg:col-span-4 flex flex-col gap-4 overflow-hidden">
             <div className="glass-card glass-card-static p-6 border-none flex flex-col gap-5 shrink-0">
                <div className="space-y-4">
@@ -277,7 +277,7 @@ export default function AdminDashboardPage() {
               
               <div 
                  id="claims-list"
-                 className="flex-1 overflow-y-auto overflow-x-hidden pr-2 space-y-3 custom-scrollbar"
+                 className="flex-1 overflow-y-auto overflow-x-hidden pr-2 space-y-3 custom-scrollbar max-h-[500px] lg:max-h-full"
                >
                 {filteredClaims.map((claim) => (
                   <div 
@@ -329,7 +329,7 @@ export default function AdminDashboardPage() {
             </div>
           </aside>
 
-          <section className="lg:col-span-8 relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black">
+          <section className="lg:col-span-8 relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black min-h-[500px] lg:min-h-0 order-first lg:order-none">
             <ErrorBoundary fallback={
               <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-black/40 rounded-3xl border border-white/10">
                 <span className="text-5xl">🗺️</span>
@@ -352,10 +352,10 @@ export default function AdminDashboardPage() {
             <AnimatePresence>
               {selectedClaim && (
                   <motion.div 
-                    initial={{ x: 600, opacity: 0 }}
+                    initial={{ x: "100%", opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: 600, opacity: 0 }}
-                    className="absolute top-10 right-10 bottom-10 w-[600px] bg-[#0F172A]/98 backdrop-blur-3xl rounded-3xl border border-white/20 shadow-[0_0_120px_rgba(0,0,0,1)] overflow-hidden flex flex-col z-50 transition-all duration-300"
+                    exit={{ x: "100%", opacity: 0 }}
+                    className="absolute inset-0 lg:top-10 lg:right-10 lg:bottom-10 lg:left-auto lg:w-[600px] bg-[#0F172A]/98 backdrop-blur-3xl rounded-none lg:rounded-3xl border-l lg:border border-white/20 shadow-[0_0_120px_rgba(0,0,0,1)] overflow-hidden flex flex-col z-[100] transition-all duration-300"
                   >
                   <div 
                     style={{ paddingLeft: '32px', paddingTop: '32px', paddingRight: '32px', paddingBottom: '24px' }}
