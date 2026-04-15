@@ -95,8 +95,7 @@ body::before {
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: scale(1.03);
+  border-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
 }
 
@@ -296,12 +295,11 @@ input:focus, textarea:focus {
 }
 
 .btn-primary:hover {
-  transform: translateY(-4px) scale(1.02);
   box-shadow: 0 15px 35px -5px rgba(46, 204, 113, 0.6);
 }
 
 .btn-primary:active {
-  transform: scale(0.96);
+  opacity: 0.9;
 }
 
 /* Animations and Utilities */
