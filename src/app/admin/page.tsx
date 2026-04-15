@@ -337,16 +337,18 @@ export default function AdminDashboardPage() {
                 <p className="text-white/20 text-[10px] text-center max-w-xs px-8">Configurá la clave de Google Maps en Vercel para activar el mapa</p>
               </div>
             }>
-              <InteractiveMap
-                center={mapCenter}
-                zoom={mapZoom}
-                markers={filteredClaims.filter(c => c.location).map(c => ({
-                  id: c.id,
-                  position: c.location,
-                  status: c.status,
-                  onClick: () => handleSelectClaim(c)
-                }))}
-              />
+              <div className="absolute inset-0">
+                <InteractiveMap
+                  center={mapCenter}
+                  zoom={mapZoom}
+                  markers={filteredClaims.filter(c => c.location).map(c => ({
+                    id: c.id,
+                    position: c.location,
+                    status: c.status,
+                    onClick: () => handleSelectClaim(c)
+                  }))}
+                />
+              </div>
             </ErrorBoundary>
 
             <AnimatePresence>

@@ -19,7 +19,7 @@ const USER_ROLES = [
   { id: 'institucion', label: 'Institución / Asociación', icon: '🏛️' }
 ];
 
-const INITIAL_CENTER = { lat: -33.0858, lng: -64.2934 }; // Centro exacto Las Higueras
+const INITIAL_CENTER = { lat: -33.0922, lng: -64.2889 }; // Centro exacto Las Higueras
 
 export default function LoginPage() {
   const router = useRouter();
