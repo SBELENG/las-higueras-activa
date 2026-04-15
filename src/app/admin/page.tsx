@@ -294,7 +294,13 @@ export default function AdminDashboardPage() {
                             PRIORIDAD
                           </span>
                         )}
-                        <span className="text-[11px] font-black text-white shrink-0">{claim.date}</span>
+                        <span className="text-[11px] font-black text-white shrink-0">
+                           {(() => {
+                             const d = new Date(claim.date);
+                             if (isNaN(d.getTime())) return claim.date;
+                             return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear().toString().slice(-2)} - ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                           })()}
+                        </span>
                       </div>
                       {/* Swapped: Name as Title */}
                       <p className="text-sm font-black text-white uppercase tracking-tight leading-none mb-1">
@@ -357,10 +363,10 @@ export default function AdminDashboardPage() {
                     initial={{ x: "100%", opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: "100%", opacity: 0 }}
-                    className="absolute inset-0 lg:top-10 lg:right-10 lg:bottom-10 lg:left-auto lg:w-[600px] bg-[#0F172A]/98 backdrop-blur-3xl rounded-none lg:rounded-3xl border-l lg:border border-white/20 shadow-[0_0_120px_rgba(0,0,0,1)] overflow-hidden flex flex-col z-[100] transition-all duration-300"
+                    className="absolute inset-2 md:inset-6 lg:top-10 lg:right-10 lg:bottom-10 lg:left-auto lg:w-[600px] bg-[#0F172A] backdrop-blur-3xl rounded-3xl border border-white/20 shadow-[0_0_120px_rgba(0,0,0,1)] overflow-hidden flex flex-col z-[100] transition-all duration-300"
                   >
                   <div 
-                    className="px-8 py-8 border-b border-white/10 flex justify-between items-center bg-white/5 transition-all w-full"
+                    className="px-6 py-6 border-b border-white/10 flex justify-between items-center bg-white/5 transition-all w-full"
                   >
                     <div className="space-y-2 max-w-[80%]">
                       <div className="flex items-center gap-3">
@@ -381,28 +387,31 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div 
-                    className="flex-1 overflow-y-auto px-6 py-8 md:px-8 space-y-8 custom-scrollbar scroll-smooth"
+                    className="flex-1 overflow-y-auto px-6 py-8 md:px-8 space-y-6 custom-scrollbar scroll-smooth"
                   >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-black/40 p-5 lg:p-10 rounded-[2rem] border border-white/5 group transition-all">
-                        <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
-                           📌 Categoría
-                        </p>
-                        <p className="text-xl font-black text-white tracking-tight uppercase">{selectedClaim.category}</p>
-                        <div className="mt-4">
-                          <span className="text-[9px] font-black px-3 py-1.5 bg-white/5 rounded-lg text-white/40 uppercase tracking-[0.2em] border border-white/10">{selectedClaim.user_role}</span>
-                        </div>
-                      </div>
-                      <div className="bg-black/40 p-5 lg:p-10 rounded-[2rem] border border-white/5 flex flex-col justify-center gap-6">
-                        <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em] mb-2 flex items-center gap-2">
-                          <span className="text-[#F1C40F]">⚡</span> Gestión
-                        </p>
-                        <button 
-                          onClick={(e) => handleTogglePriority(selectedClaim.id, e)}
-                          className={`w-full py-4 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border transition-all duration-500 hover:scale-105 active:scale-95 ${selectedClaim.priority ? 'bg-gradient-to-tr from-[#9B59B6] to-purple-400 text-white border-purple-400/50 shadow-purple-500/10' : 'bg-white/5 text-white/30 border-white/5 hover:bg-white/10'}`}
-                        >
-                          {selectedClaim.priority ? '★ PRIORIDAD ALTA' : 'SUBIR PRIORIDAD'}
-                        </button>
+                    {/* Standalone High-Visibility Priority Toggle */}
+                    <button 
+                      onClick={(e) => handleTogglePriority(selectedClaim.id, e)}
+                      className={`w-full py-5 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] border transition-all duration-500 shadow-xl flex items-center justify-center gap-3 ${selectedClaim.priority ? 'bg-gradient-to-tr from-[#9B59B6] to-purple-400 text-white border-purple-400/50 shadow-purple-500/20' : 'bg-black/40 text-white border-white/5 hover:bg-white/5'}`}
+                    >
+                      {selectedClaim.priority ? (
+                        <>
+                          <span className="text-xl">★</span> PRIORIDAD ALTA ASIGNADA
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-xl">⚡</span> ESTABLECER COMO PRIORIDAD
+                        </>
+                      )}
+                    </button>
+
+                    <div className="bg-black/40 p-6 lg:p-8 rounded-[2rem] border border-white/5 group transition-all">
+                      <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                         📌 Categoría
+                      </p>
+                      <p className="text-xl font-black text-white tracking-tight uppercase">{selectedClaim.category}</p>
+                      <div className="mt-4">
+                        <span className="text-[9px] font-black px-3 py-1.5 bg-white/5 rounded-lg text-white/40 uppercase tracking-[0.2em] border border-white/10">{selectedClaim.user_role}</span>
                       </div>
                     </div>
 
