@@ -40,8 +40,9 @@ export default function NuevoReclamoPage() {
   const [loading, setLoading] = useState(false);
   const [limitError, setLimitError] = useState(false);
 
-  // File input ref (single, handles both camera and gallery via OS native picker)
+  // Two separate references: one for direct camera, one for gallery
   const photoInputRef = React.useRef<HTMLInputElement>(null);
+  const galleryInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Check daily limit (MAX 3)
@@ -77,7 +78,7 @@ export default function NuevoReclamoPage() {
     const datePrefix = `${year}${month}${day}`;
     
     const currentMonthPrefix = `${year}${month}`;
-    const monthlyClaims = claims.filter((c: any) => c.id.toString().startsWith(currentMonthPrefix));
+    const monthlyClaims = claims.filter((c: any) => c.id?.toString().startsWith(currentMonthPrefix));
     const nextSequence = (monthlyClaims.length + 1).toString().padStart(4, '0');
     const newId = `${datePrefix}${nextSequence}`;
 
@@ -209,16 +210,26 @@ export default function NuevoReclamoPage() {
                     📸 Foto del lugar {category?.critical && <span className="text-[#2ECC71] text-xs font-bold">(Obligatoria)</span>}
                   </label>
 
-                  {/* Single hidden input — OS shows native picker (camera or gallery) */}
+                  {/* Camera specific input */}
                   <input 
                     type="file" 
                     accept="image/*"
+                    capture="environment"
                     className="hidden" 
                     ref={photoInputRef}
                     onChange={handlePhotoUpload}
                   />
 
-                  {/* Photo preview or single add-photo button */}
+                  {/* Gallery specific input */}
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    className="hidden" 
+                    ref={galleryInputRef}
+                    onChange={handlePhotoUpload}
+                  />
+
+                  {/* Photo preview or dual add-photo buttons */}
                   {photo ? (
                     <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-[#2ECC71]/50 relative">
                       <img src={photo} alt="Vista previa" className="w-full h-full object-cover" />
@@ -227,19 +238,35 @@ export default function NuevoReclamoPage() {
                         onClick={() => setPhoto(null)}
                         className="absolute top-3 right-3 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/20 backdrop-blur-md"
                       >
-                        ✕ Cambiar
+                        ✕ Eliminar Foto
                       </button>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => photoInputRef.current?.click()}
-                      className="w-full flex flex-col items-center justify-center gap-3 p-8 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#2ECC71]/50 transition-all cursor-pointer"
-                    >
-                      <span className="text-5xl">📷</span>
-                      <span className="text-white/80 text-sm font-bold">Agregar Foto</span>
-                      <span className="text-white/30 text-[10px] uppercase tracking-wider">Cámara o Galería</span>
-                    </button>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => photoInputRef.current?.click()}
+                        className="w-full flex flex-col items-center justify-center gap-3 p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#2ECC71]/50 transition-all cursor-pointer"
+                      >
+                        <span className="text-4xl text-[#2ECC71]">📷</span>
+                        <div className="flex flex-col items-center">
+                          <span className="text-white/90 text-sm font-bold">Tomar Foto</span>
+                          <span className="text-white/30 text-[10px] uppercase tracking-wider mt-1">ABRIR CÁMARA</span>
+                        </div>
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={() => galleryInputRef.current?.click()}
+                        className="w-full flex flex-col items-center justify-center gap-3 p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#3498DB]/50 transition-all cursor-pointer"
+                      >
+                        <span className="text-4xl text-[#3498DB]">🖼️</span>
+                        <div className="flex flex-col items-center">
+                          <span className="text-white/90 text-sm font-bold">Subir Galería</span>
+                          <span className="text-white/30 text-[10px] uppercase tracking-wider mt-1">ELEGIR ARCHIVO</span>
+                        </div>
+                      </button>
+                    </div>
                   )}
                 </div>
 

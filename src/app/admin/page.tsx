@@ -360,8 +360,7 @@ export default function AdminDashboardPage() {
                     className="absolute inset-0 lg:top-10 lg:right-10 lg:bottom-10 lg:left-auto lg:w-[600px] bg-[#0F172A]/98 backdrop-blur-3xl rounded-none lg:rounded-3xl border-l lg:border border-white/20 shadow-[0_0_120px_rgba(0,0,0,1)] overflow-hidden flex flex-col z-[100] transition-all duration-300"
                   >
                   <div 
-                    style={{ paddingLeft: '32px', paddingTop: '32px', paddingRight: '32px', paddingBottom: '24px' }}
-                    className="border-b border-white/10 flex justify-between items-center bg-white/5 transition-all"
+                    className="px-4 py-6 lg:px-8 lg:py-8 border-b border-white/10 flex justify-between items-center bg-white/5 transition-all"
                   >
                     <div className="space-y-2 max-w-[80%]">
                       <div className="flex items-center gap-3">
@@ -382,11 +381,10 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div 
-                    style={{ paddingLeft: '32px', paddingRight: '32px', paddingTop: '32px', paddingBottom: '48px' }}
-                    className="flex-1 overflow-y-auto space-y-8 custom-scrollbar scroll-smooth"
+                    className="flex-1 overflow-y-auto px-4 py-8 lg:px-8 space-y-8 custom-scrollbar scroll-smooth"
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-black/40 p-10 rounded-[2rem] border border-white/5 group transition-all">
+                      <div className="bg-black/40 p-5 lg:p-10 rounded-[2rem] border border-white/5 group transition-all">
                         <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
                            📌 Categoría
                         </p>
@@ -395,7 +393,7 @@ export default function AdminDashboardPage() {
                           <span className="text-[9px] font-black px-3 py-1.5 bg-white/5 rounded-lg text-white/40 uppercase tracking-[0.2em] border border-white/10">{selectedClaim.user_role}</span>
                         </div>
                       </div>
-                      <div className="bg-black/40 p-10 rounded-[2rem] border border-white/5 flex flex-col justify-center gap-6">
+                      <div className="bg-black/40 p-5 lg:p-10 rounded-[2rem] border border-white/5 flex flex-col justify-center gap-6">
                         <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em] mb-2 flex items-center gap-2">
                           <span className="text-[#F1C40F]">⚡</span> Gestión
                         </p>
@@ -413,13 +411,13 @@ export default function AdminDashboardPage() {
                     </div>
 
                     <div className="space-y-8">
-                       <div className="bg-black/40 p-10 rounded-[2rem] border border-white/5 group shadow-xl">
+                       <div className="bg-black/40 p-5 lg:p-10 rounded-[2rem] border border-white/5 group shadow-xl">
                          <p className="text-[10px] text-white/20 font-black tracking-[0.3em] uppercase mb-6 flex items-center gap-2">
                            <span className="text-[#1E5F9E]">📍</span> Ubicación Geográfica
                          </p>
                          <p className="text-xl font-black text-white tracking-tight">{selectedClaim.address}</p>
                        </div>
-                       <div className="p-10 bg-black/40 rounded-[2rem] border border-white/5 shadow-xl">
+                       <div className="bg-black/40 p-5 lg:p-10 rounded-[2rem] border border-white/5 shadow-xl">
                          <p className="text-[10px] text-white/20 font-black tracking-[0.3em] uppercase mb-6 flex items-center gap-2">
                            <span className="text-white/20">📝</span> Declaración del Vecino
                          </p>
