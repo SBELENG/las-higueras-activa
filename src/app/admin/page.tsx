@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamicMap from 'next/dynamic';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const InteractiveMap = dynamicMap(() => import('../../components/InteractiveMap'), { 
   ssr: false,
@@ -328,16 +329,24 @@ export default function AdminDashboardPage() {
           </aside>
 
           <section className="lg:col-span-8 relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black">
-            <InteractiveMap
-              center={mapCenter}
-              zoom={mapZoom}
-              markers={filteredClaims.filter(c => c.location).map(c => ({
-                id: c.id,
-                position: c.location,
-                status: c.status,
-                onClick: () => handleSelectClaim(c)
-              }))}
-            />
+            <ErrorBoundary fallback={
+              <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-black/40 rounded-3xl border border-white/10">
+                <span className="text-5xl">🗺️</span>
+                <p className="text-white/30 text-xs font-black uppercase tracking-widest">Mapa no disponible</p>
+                <p className="text-white/20 text-[10px] text-center max-w-xs px-8">Configurá la clave de Google Maps en Vercel para activar el mapa</p>
+              </div>
+            }>
+              <InteractiveMap
+                center={mapCenter}
+                zoom={mapZoom}
+                markers={filteredClaims.filter(c => c.location).map(c => ({
+                  id: c.id,
+                  position: c.location,
+                  status: c.status,
+                  onClick: () => handleSelectClaim(c)
+                }))}
+              />
+            </ErrorBoundary>
 
             <AnimatePresence>
               {selectedClaim && (
