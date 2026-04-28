@@ -337,17 +337,17 @@ export default function NuevoReclamoPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
+                className="space-y-10"
               >
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <p className="text-white/70 font-medium flex items-center gap-2">
                     <span className="text-2xl">📍</span>
                     ¿Dónde está el problema?
                   </p>
-                  <p className="text-white/40 text-xs">Mova el marcador en el mapa para ubicar el reclamo con precisión.</p>
+                  <p className="text-white/40 text-xs leading-relaxed">Mueva el marcador en el mapa para ubicar el reclamo con precisión.</p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Dirección o Referencia del Reclamo</label>
                   <input
                     type="text"
@@ -384,7 +384,8 @@ export default function NuevoReclamoPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-center -mt-4 z-20 relative px-4">
+                {/* Botón Usar mi ubicación */}
+                <div className="flex justify-center pt-2 z-20 relative">
                   <button 
                     type="button"
                     onClick={() => {
@@ -394,20 +395,26 @@ export default function NuevoReclamoPage() {
                         });
                       }
                     }}
-                    className="bg-white/10 backdrop-blur-md text-white px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border border-white/20 flex items-center justify-center gap-2 w-full max-w-[280px] hover:bg-white/20 transition-all"
+                    className="bg-white/10 backdrop-blur-xl text-white px-8 py-4 rounded-2xl text-sm font-bold shadow-[0_8px_30px_-8px_rgba(52,152,219,0.4)] border border-[#3498DB]/30 flex items-center justify-center gap-3 w-full hover:bg-[#3498DB]/20 hover:border-[#3498DB]/60 transition-all transform active:scale-95"
                   >
-                    <span className="text-base leading-none">📍</span>
-                    <span className="flex-1">Usar mi ubicación actual</span>
+                    <span className="text-xl leading-none">📍</span>
+                    <span>Usar mi ubicación actual</span>
                   </button>
                 </div>
 
-                <div className="pt-4">
+                {/* Separador visual */}
+                <div className="flex items-center gap-4 py-2">
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+                </div>
+
+                {/* Botón Confirmar y Enviar */}
+                <div>
                   <button
                     onClick={handleSubmit}
                     disabled={!claimAddress || loading}
-                    className="w-full bg-[#2ECC71] hover:bg-[#27AE60] disabled:opacity-50 text-white font-bold p-5 rounded-2xl shadow-lg transition-all"
+                    className="w-full bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-black py-5 px-8 rounded-2xl shadow-[0_8px_30px_-8px_rgba(46,204,113,0.5)] transition-all transform active:scale-95 text-base tracking-wide"
                   >
-                    {loading ? 'Enviando Reclamo...' : 'Confirmar y Enviar'}
+                    {loading ? 'Enviando Reclamo...' : '✅ Confirmar y Enviar'}
                   </button>
                 </div>
               </motion.div>

@@ -137,7 +137,7 @@ export default function LoginPage() {
                 <p className="text-white/50 text-xs uppercase tracking-widest font-medium">Contanos un poco sobre vos</p>
               </div>
 
-              <form onSubmit={handleFinishProfile} className="space-y-8">
+              <form onSubmit={handleFinishProfile} className="space-y-10">
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Tu Nombre</label>
@@ -153,7 +153,7 @@ export default function LoginPage() {
 
                 <div className="space-y-6">
                   <label className="text-white/70 text-xs font-bold uppercase tracking-widest ml-1">¿Cómo te identificás?</label>
-                  <div className="grid grid-cols-1 gap-5">
+                  <div className="grid grid-cols-1 gap-6">
                     {USER_ROLES.map((uRole) => (
                       <label 
                         key={uRole.id}
@@ -188,19 +188,20 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <div className="pt-12 mt-4 border-t border-white/5 space-y-8">
-                  <label className="flex items-start gap-4 cursor-pointer p-5 bg-black/20 rounded-2xl border border-white/10 hover:border-white/30 transition-all">
+                {/* --- Términos y Condiciones --- */}
+                <div className="pt-14 mt-6 border-t border-white/10 space-y-6">
+                  <label className="flex items-start gap-5 cursor-pointer p-6 bg-black/30 rounded-2xl border-2 border-[#2ECC71]/20 hover:border-[#2ECC71]/40 transition-all shadow-lg">
                     <div className="pt-0.5">
                       <input 
                         type="checkbox" 
                         required
-                        className="w-5 h-5 accent-[#2ECC71] rounded shrink-0 cursor-pointer"
+                        className="w-6 h-6 accent-[#2ECC71] rounded shrink-0 cursor-pointer"
                         checked={acceptedTerms}
                         onChange={(e) => setAcceptedTerms(e.target.checked)}
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="text-white/80 text-xs font-medium leading-relaxed">
+                      <p className="text-white/90 text-sm font-semibold leading-relaxed">
                         Acepto los términos y condiciones de uso.
                       </p>
                     </div>
@@ -208,22 +209,25 @@ export default function LoginPage() {
 
                   <a 
                     href="#" 
-                    className="block text-center text-white/40 text-[10px] font-bold uppercase tracking-widest hover:text-white/60 transition-colors"
+                    className="block text-center text-white/40 text-[10px] font-bold uppercase tracking-widest hover:text-white/60 transition-colors mt-4"
                   >
                     Ver políticas de privacidad
                   </a>
+                </div>
 
-                  <p className="text-center text-[#2ECC71]/50 text-[9px] font-black tracking-widest uppercase">
-                    Desarrollado por Ideas Digitales
-                  </p>
-
+                {/* --- Botón y créditos --- */}
+                <div className="pt-6 space-y-5">
                   <button
                     type="submit"
                     disabled={!name || !role || !acceptedTerms}
-                    className="w-full bg-[#2ECC71] hover:bg-[#27AE60] disabled:opacity-50 text-white font-bold p-5 rounded-2xl shadow-lg transition-all transform active:scale-95"
+                    className="w-full bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-black py-5 px-8 rounded-2xl shadow-[0_8px_30px_-8px_rgba(46,204,113,0.5)] transition-all transform active:scale-95 text-base tracking-wide"
                   >
                     Comenzar
                   </button>
+
+                  <p className="text-center text-[#2ECC71]/40 text-[9px] font-black tracking-widest uppercase pt-2">
+                    Desarrollado por Ideas Digitales
+                  </p>
                 </div>
               </form>
             </div>
