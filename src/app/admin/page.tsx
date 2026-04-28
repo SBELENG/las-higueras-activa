@@ -38,8 +38,23 @@ export default function AdminDashboardPage() {
     rejected: 0,
     priorities: 0
   });
+  const [newClaimAlert, setNewClaimAlert] = useState<{show: boolean, message: string}>({show: false, message: ''});
+  const audioCtxRef = React.useRef<AudioContext | null>(null);
+  const prevCountRef = React.useRef<number>(-1);
 
   useEffect(() => setIsClient(true), []);
+
+  // Unlock AudioContext on first user interaction
+  useEffect(() => {
+    const init = () => {
+      if (!audioCtxRef.current) {
+        try { audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)(); } catch(e) {}
+      }
+      document.removeEventListener('click', init);
+    };
+    document.addEventListener('click', init);
+    return () => document.removeEventListener('click', init);
+  }, []);
 
   useEffect(() => {
     const userStr = localStorage.getItem('lh_admin_user');
@@ -99,6 +114,45 @@ export default function AdminDashboardPage() {
     if (!isClient) return;
     loadData();
   }, [isClient, loadData]);
+
+  const playNotifSound = React.useCallback(() => {
+    try {
+      const ctx = audioCtxRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioCtxRef.current = ctx;
+      const t = ctx.currentTime;
+      const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
+      o1.connect(g1); g1.connect(ctx.destination);
+      o1.frequency.setValueAtTime(523, t); o1.frequency.setValueAtTime(659, t + 0.15);
+      g1.gain.setValueAtTime(0.3, t); g1.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+      o1.start(t); o1.stop(t + 0.4);
+      const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+      o2.connect(g2); g2.connect(ctx.destination);
+      o2.frequency.setValueAtTime(784, t + 0.2);
+      g2.gain.setValueAtTime(0, t); g2.gain.setValueAtTime(0.3, t + 0.2);
+      g2.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
+      o2.start(t + 0.2); o2.stop(t + 0.6);
+    } catch (e) { console.warn('Sound error:', e); }
+  }, []);
+
+  // Poll for new claims every 5 seconds
+  useEffect(() => {
+    if (!isClient) return;
+    const check = () => {
+      const all = JSON.parse(localStorage.getItem('lh_claims') || '[]');
+      const count = all.length;
+      if (prevCountRef.current === -1) { prevCountRef.current = count; return; }
+      if (count > prevCountRef.current) {
+        const diff = count - prevCountRef.current;
+        prevCountRef.current = count;
+        playNotifSound();
+        setNewClaimAlert({ show: true, message: `🚨 ${diff} nuevo${diff > 1 ? 's' : ''} reclamo${diff > 1 ? 's' : ''} recibido${diff > 1 ? 's' : ''}` });
+        loadData();
+        setTimeout(() => setNewClaimAlert({show: false, message: ''}), 8000);
+      }
+    };
+    const id = setInterval(check, 5000);
+    return () => clearInterval(id);
+  }, [isClient, loadData, playNotifSound]);
 
   // IMPORTANT: getMarkerIcon must also be BEFORE the conditional return (Rules of Hooks)
   const getMarkerIcon = React.useCallback((status: string) => {
@@ -179,6 +233,23 @@ export default function AdminDashboardPage() {
   return (
     <main className="min-h-screen relative p-4 md:p-8 flex flex-col items-center">
       <div className="app-bg"></div>
+
+      {/* Notification Toast */}
+      <AnimatePresence>
+        {newClaimAlert.show && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] bg-[#E74C3C] text-white px-8 py-4 rounded-2xl shadow-2xl shadow-red-500/30 border border-red-400/30 flex items-center gap-3 backdrop-blur-xl cursor-pointer"
+            onClick={() => { setNewClaimAlert({show: false, message: ''}); loadData(); }}
+          >
+            <span className="text-2xl animate-bounce">🔔</span>
+            <span className="font-black text-sm tracking-wide">{newClaimAlert.message}</span>
+            <span className="ml-2 text-white/60 text-xs">✕</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <div className="w-full max-w-[1600px] space-y-6 z-10">
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-black/40 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl">
@@ -320,22 +391,23 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                 ))}
-                <div className="pt-4 pb-20 flex justify-center">
+                <div className="sticky bottom-0 pt-4 pb-6 flex justify-center bg-gradient-to-t from-black/90 via-black/60 to-transparent -mx-2 px-2">
                    <button 
                      onClick={() => {
                         const list = document.getElementById('claims-list');
                         list?.scrollTo({ top: 0, behavior: 'smooth' });
                      }}
-                     className="bg-white/5 hover:bg-white/10 text-white/30 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] px-6 py-3 rounded-full border border-white/5 transition-all"
+                     className="bg-[#2ECC71]/20 hover:bg-[#2ECC71]/30 text-[#2ECC71] text-[11px] font-black uppercase tracking-[0.15em] px-8 py-4 rounded-2xl border border-[#2ECC71]/30 transition-all shadow-lg shadow-green-500/10 flex items-center gap-2"
                    >
-                     ↑ VOLVER AL INICIO
+                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 15l-6-6-6 6"/></svg>
+                     VOLVER AL INICIO
                    </button>
                 </div>
               </div>
             </div>
           </aside>
 
-          <section className="lg:col-span-8 relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black min-h-[500px] lg:min-h-0 order-first lg:order-none">
+          <section className="lg:col-span-8 relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black min-h-[350px] lg:min-h-0 order-first lg:order-none my-2 lg:my-0">
             <ErrorBoundary fallback={
               <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-black/40 rounded-3xl border border-white/10">
                 <span className="text-5xl">🗺️</span>

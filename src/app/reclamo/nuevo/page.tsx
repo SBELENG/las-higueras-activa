@@ -4,6 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import StepIndicator from '@/components/StepIndicator';
+import dynamicImport from 'next/dynamic';
+
+const InteractiveMap = dynamicImport(() => import('../../../components/InteractiveMap'), { 
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-black/20 animate-pulse rounded-2xl border border-white/5" />
+});
 
 const MAP_OPTIONS = {
   disableDefaultUI: true,
@@ -37,6 +43,8 @@ export default function NuevoReclamoPage() {
   const [category, setCategory] = useState<any>(null);
   const [description, setDescription] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
+  const [claimAddress, setClaimAddress] = useState('');
+  const [claimLocation, setClaimLocation] = useState({ lat: -33.0922, lng: -64.2889 });
   const [loading, setLoading] = useState(false);
   const [limitError, setLimitError] = useState(false);
 
@@ -55,7 +63,7 @@ export default function NuevoReclamoPage() {
   }, []);
 
   const handleNext = () => {
-    if (step < 2) setStep(step + 1);
+    if (step < 3) setStep(step + 1);
   };
 
   const handleBack = () => {
@@ -87,12 +95,12 @@ export default function NuevoReclamoPage() {
       category: category.label,
       description,
       photo,
-      address: user.address || 'Ubicación registrada',
-      location: user.location || { lat: -33.085, lng: -64.35 },
+      address: claimAddress,
+      location: claimLocation,
       user_name: user.name || 'Vecino Invitado',
       user_role: user.role || 'vecino',
       status: 'PENDING',
-      date: now.toISOString(), // ISO format for robust filtering
+      date: now.toISOString(),
     };
 
     try {
@@ -181,10 +189,10 @@ export default function NuevoReclamoPage() {
 
         <div className="space-y-4">
           <h1 className="text-3xl font-bold text-shadow">Nuevo Reclamo</h1>
-          <StepIndicator currentStep={step - 1} totalSteps={2} labels={['Categoría', 'Detalle']} />
+          <StepIndicator currentStep={step - 1} totalSteps={3} labels={['Categoría', 'Detalle', 'Ubicación']} />
           {/* Arrow indicator as requested */}
           <div className="flex justify-between items-center text-white/40 text-[10px] font-bold uppercase tracking-widest px-1">
-             <span>{step === 1 ? 'Categoría' : 'Detalle'}</span>
+             <span>{step === 1 ? 'Categoría' : step === 2 ? 'Detalle' : 'Ubicación'}</span>
              <div className="flex items-center gap-1">
                 <span>Paso {step}</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m9 18 6-6-6-6"/></svg>
@@ -312,8 +320,91 @@ export default function NuevoReclamoPage() {
 
                 <div className="pt-10">
                   <button
+                    onClick={handleNext}
+                    disabled={!description || (category?.critical && !photo)}
+                    className="w-full bg-[#2ECC71] hover:bg-[#27AE60] disabled:opacity-50 text-white font-bold p-5 rounded-2xl shadow-lg transition-all"
+                  >
+                    Siguiente: Ubicación
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 3: Ubicación del Reclamo */}
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-8"
+              >
+                <div className="space-y-2">
+                  <p className="text-white/70 font-medium flex items-center gap-2">
+                    <span className="text-2xl">📍</span>
+                    ¿Dónde está el problema?
+                  </p>
+                  <p className="text-white/40 text-xs">Mova el marcador en el mapa para ubicar el reclamo con precisión.</p>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Dirección o Referencia del Reclamo</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej: Calle San Martín 123 o 'Frente al club'"
+                    className="w-full bg-white/5 border border-white/20 rounded-2xl px-6 py-5 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
+                    value={claimAddress}
+                    onChange={(e) => setClaimAddress(e.target.value)}
+                  />
+                </div>
+
+                <div className="w-full h-[320px] rounded-3xl overflow-hidden border border-white/10 bg-black/20 relative shadow-inner">
+                  <InteractiveMap 
+                    center={claimLocation}
+                    zoom={15}
+                    onMarkerDragEnd={(e: any) => {
+                      if (e.latLng) {
+                        setClaimLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+                      }
+                    }}
+                    draggableMarker
+                    markerIcon={{
+                      path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                      fillColor: '#E74C3C',
+                      fillOpacity: 1,
+                      strokeWeight: 2,
+                      strokeColor: '#FFFFFF',
+                      scale: 1.8,
+                      anchor: { x: 12, y: 24 }
+                    }}
+                  />
+                  <div className="absolute top-4 left-4 right-4 bg-black/80 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-xs font-bold text-white text-center shadow-xl pointer-events-none">
+                    📍 Arrastrá el marcador para ubicar el reclamo
+                  </div>
+                </div>
+
+                <div className="flex justify-center -mt-4 z-20 relative px-4">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if ("geolocation" in navigator) {
+                        navigator.geolocation.getCurrentPosition((pos) => {
+                          setClaimLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                        });
+                      }
+                    }}
+                    className="bg-white/10 backdrop-blur-md text-white px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border border-white/20 flex items-center justify-center gap-2 w-full max-w-[280px] hover:bg-white/20 transition-all"
+                  >
+                    <span className="text-base leading-none">📍</span>
+                    <span className="flex-1">Usar mi ubicación actual</span>
+                  </button>
+                </div>
+
+                <div className="pt-4">
+                  <button
                     onClick={handleSubmit}
-                    disabled={!description || (category?.critical && !photo) || loading}
+                    disabled={!claimAddress || loading}
                     className="w-full bg-[#2ECC71] hover:bg-[#27AE60] disabled:opacity-50 text-white font-bold p-5 rounded-2xl shadow-lg transition-all"
                   >
                     {loading ? 'Enviando Reclamo...' : 'Confirmar y Enviar'}

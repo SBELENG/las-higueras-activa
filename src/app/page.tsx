@@ -24,7 +24,7 @@ export default function OnboardingPage() {
     } else {
       // Pass the intended destination so they could be redirected later if we wanted, 
       // but for now, just force them to login first.
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(destination)}`);
     }
   };
 
@@ -60,52 +60,44 @@ export default function OnboardingPage() {
 
         <div className="w-full max-w-sm flex flex-col gap-4">
           <button
-            className="btn-primary group flex items-center justify-center gap-3 w-full"
+            className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 shadow-lg group flex items-center justify-center gap-3 w-full transition-all"
             onClick={() => handleNavigation('/reclamo/nuevo')}
           >
             <span className="text-xl">🚨</span>
-            <span className="flex-1 text-left">Hacer un Reclamo</span>
+            <span className="flex-1 text-left tracking-wide">Hacer un Reclamo</span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </button>
 
-          <button
-            className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 shadow-lg group flex items-center justify-center gap-3 w-full transition-all"
-            onClick={() => handleNavigation('/reclamos')}
-          >
-            <span className="text-xl">🚥</span>
-            <span className="flex-1 text-left tracking-wide">Seguir mi Reclamo</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </button>
+          {hasSession && (
+            <>
+              <button
+                className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 shadow-lg group flex items-center justify-center gap-3 w-full transition-all"
+                onClick={() => handleNavigation('/reclamos')}
+              >
+                <span className="text-xl">🚥</span>
+                <span className="flex-1 text-left tracking-wide">Seguir mi Reclamo</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
 
-          <button
-            className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 shadow-lg group flex items-center justify-center gap-3 w-full transition-all"
-            onClick={() => handleNavigation('/mensajes')}
-          >
-            <span className="text-xl">📢</span>
-            <span className="flex-1 text-left tracking-wide">Ver Mensajes</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </button>
+              <button
+                className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 shadow-lg group flex items-center justify-center gap-3 w-full transition-all"
+                onClick={() => handleNavigation('/mensajes')}
+              >
+                <span className="text-xl">📢</span>
+                <span className="flex-1 text-left tracking-wide">Ver Mensajes</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
         </div>
 
-        {hasSession && (
-          <button 
-            onClick={() => {
-              localStorage.removeItem('lh_activa_user');
-              setHasSession(false);
-              alert("Sesión borrada. Al hacer un reclamo se te volverán a pedir los datos.");
-            }}
-            className="mt-4 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
-          >
-             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-             Cerrar Sesión (Reiniciar Demo)
-          </button>
-        )}
+
 
         <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)' }}>
           Municipalidad de Las Higueras · Córdoba, Argentina

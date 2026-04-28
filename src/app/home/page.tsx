@@ -29,7 +29,7 @@ export default function HomePage() {
         const parsed = JSON.parse(saved);
         setUserData({
           name: parsed.name || "Vecino",
-          location: parsed.barrio || (parsed.role === 'comercio' ? 'Comercio Local, Las Higueras' : 'Barrio San Alberto, Las Higueras'),
+          location: parsed.role === 'comercio' ? 'Comercio Local, Las Higueras' : 'Las Higueras, Córdoba',
           role: parsed.role || "vecino"
         });
       }
