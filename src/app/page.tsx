@@ -60,12 +60,12 @@ export default function OnboardingPage() {
 
         <div className="w-full max-w-sm flex flex-col gap-4">
           <button
-            className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 shadow-lg group flex items-center justify-center gap-3 w-full transition-all"
+            className="bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] text-white font-black py-6 px-8 rounded-3xl border border-[#2ECC71]/30 shadow-[0_10px_40px_-10px_rgba(46,204,113,0.5)] group flex items-center justify-center gap-4 w-full transition-all transform hover:scale-[1.02] active:scale-95 text-lg tracking-wide ring-2 ring-[#2ECC71]/20 ring-offset-2 ring-offset-transparent"
             onClick={() => handleNavigation('/reclamo/nuevo')}
           >
-            <span className="text-xl">🚨</span>
-            <span className="flex-1 text-left tracking-wide">Hacer un Reclamo</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
+            <span className="text-2xl">🚨</span>
+            <span className="flex-1 text-left">Comenzar Reclamo</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </button>

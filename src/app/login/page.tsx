@@ -188,7 +188,7 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <div className="pt-8 space-y-6">
+                <div className="pt-12 mt-4 border-t border-white/5 space-y-8">
                   <label className="flex items-start gap-4 cursor-pointer p-5 bg-black/20 rounded-2xl border border-white/10 hover:border-white/30 transition-all">
                     <div className="pt-0.5">
                       <input 
