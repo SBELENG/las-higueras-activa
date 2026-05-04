@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { setupRecaptcha, sendVerificationCode, verifyCode } from '@/lib/firebase';
 
 const USER_ROLES = [
   { id: 'vecino', label: 'Vecino común', icon: '🏠' },
@@ -27,14 +28,30 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
-  const [devCode, setDevCode] = useState(''); // Only for development
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const recaptchaInitialized = useRef(false);
 
   React.useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Initialize reCAPTCHA when component mounts
+  useEffect(() => {
+    if (isClient && !recaptchaInitialized.current) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        try {
+          setupRecaptcha('send-code-btn');
+          recaptchaInitialized.current = true;
+        } catch (err) {
+          console.error('Error initializing reCAPTCHA:', err);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isClient]);
 
   // Countdown timer for resend
   useEffect(() => {
@@ -53,8 +70,17 @@ export default function LoginPage() {
     }
   }, [step]);
 
-  // Sigo con el resto pero protegiendo el render inicial
+  // Proteger el render inicial
   if (!isClient) return null;
+
+  const formatPhoneNumber = (rawPhone: string): string => {
+    // Add Argentina country code if not present
+    const cleaned = rawPhone.replace(/\D/g, '');
+    if (cleaned.startsWith('54')) {
+      return `+${cleaned}`;
+    }
+    return `+54${cleaned}`;
+  };
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,24 +91,14 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      const res = await fetch('/api/send-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErrorMessage(data.error || 'Error al enviar el código');
-        setLoading(false);
-        return;
+      // Re-initialize reCAPTCHA if needed
+      if (!recaptchaInitialized.current) {
+        setupRecaptcha('send-code-btn');
+        recaptchaInitialized.current = true;
       }
 
-      // In development, store the code for display
-      if (data.devCode) {
-        setDevCode(data.devCode);
-      }
+      const formattedPhone = formatPhoneNumber(phone);
+      await sendVerificationCode(formattedPhone);
 
       setMessage('✅ Código enviado al ' + phone);
       setResendTimer(60);
@@ -92,8 +108,24 @@ export default function LoginPage() {
         setStep(2);
         setMessage('');
       }, 1200);
-    } catch {
-      setErrorMessage('Error de conexión. Intentá nuevamente.');
+    } catch (err: unknown) {
+      console.error('Error sending code:', err);
+      const firebaseError = err as { code?: string; message?: string };
+      
+      // Handle specific Firebase errors
+      if (firebaseError.code === 'auth/too-many-requests') {
+        setErrorMessage('Demasiados intentos. Esperá unos minutos e intentá de nuevo.');
+      } else if (firebaseError.code === 'auth/invalid-phone-number') {
+        setErrorMessage('Número de teléfono inválido. Verificá e intentá de nuevo.');
+      } else if (firebaseError.code === 'auth/quota-exceeded') {
+        setErrorMessage('Servicio temporalmente no disponible. Intentá más tarde.');
+      } else if (firebaseError.code === 'auth/captcha-check-failed') {
+        // Re-initialize reCAPTCHA on failure
+        recaptchaInitialized.current = false;
+        setErrorMessage('Error de verificación. Intentá de nuevo.');
+      } else {
+        setErrorMessage('Error al enviar el código. Intentá nuevamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -152,31 +184,28 @@ export default function LoginPage() {
     setErrorMessage('');
 
     try {
-      const res = await fetch('/api/verify-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, code }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErrorMessage(data.error || 'Código incorrecto');
-        setLoading(false);
-        // Clear code inputs on error
-        setCodeDigits(Array(CODE_LENGTH).fill(''));
-        setTimeout(() => inputRefs.current[0]?.focus(), 100);
-        return;
-      }
+      await verifyCode(code);
 
       setMessage('✅ Teléfono verificado correctamente');
       setTimeout(() => {
         setStep(3);
         setMessage('');
-        setDevCode('');
       }, 1200);
-    } catch {
-      setErrorMessage('Error de conexión. Intentá nuevamente.');
+    } catch (err: unknown) {
+      console.error('Error verifying code:', err);
+      const firebaseError = err as { code?: string };
+      
+      if (firebaseError.code === 'auth/invalid-verification-code') {
+        setErrorMessage('Código incorrecto. Verificá e intentá de nuevo.');
+      } else if (firebaseError.code === 'auth/code-expired') {
+        setErrorMessage('El código expiró. Solicitá uno nuevo.');
+      } else {
+        setErrorMessage('Error al verificar. Intentá de nuevo.');
+      }
+
+      // Clear code inputs on error
+      setCodeDigits(Array(CODE_LENGTH).fill(''));
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } finally {
       setLoading(false);
     }
@@ -189,30 +218,27 @@ export default function LoginPage() {
     setErrorMessage('');
 
     try {
-      const res = await fetch('/api/send-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
-      });
+      // Re-initialize reCAPTCHA for resend
+      recaptchaInitialized.current = false;
+      setupRecaptcha('resend-code-btn');
+      recaptchaInitialized.current = true;
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErrorMessage(data.error || 'Error al reenviar');
-        setLoading(false);
-        return;
-      }
-
-      if (data.devCode) {
-        setDevCode(data.devCode);
-      }
+      const formattedPhone = formatPhoneNumber(phone);
+      await sendVerificationCode(formattedPhone);
 
       setMessage('✅ Nuevo código enviado');
       setResendTimer(60);
       setCodeDigits(Array(CODE_LENGTH).fill(''));
       setTimeout(() => setMessage(''), 2000);
-    } catch {
-      setErrorMessage('Error de conexión.');
+    } catch (err: unknown) {
+      console.error('Error resending code:', err);
+      const firebaseError = err as { code?: string };
+      
+      if (firebaseError.code === 'auth/too-many-requests') {
+        setErrorMessage('Demasiados intentos. Esperá unos minutos.');
+      } else {
+        setErrorMessage('Error al reenviar. Intentá de nuevo.');
+      }
     } finally {
       setLoading(false);
     }
@@ -222,7 +248,7 @@ export default function LoginPage() {
     e.preventDefault();
     if (!name || !role || !acceptedTerms) return;
 
-    // Simulate saving profile and logging in
+    // Save profile and log in
     localStorage.setItem('lh_activa_user', JSON.stringify({ 
       name, 
       phone, 
@@ -290,6 +316,7 @@ export default function LoginPage() {
                 )}
 
                 <button
+                  id="send-code-btn"
                   type="submit"
                   disabled={loading || phone.length < 8}
                   className="w-full bg-[#2ECC71] hover:bg-[#27AE60] disabled:opacity-50 text-white font-bold p-4 rounded-2xl shadow-lg transition-all transform active:scale-95"
@@ -388,18 +415,6 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {/* Dev code hint - only in development */}
-              {devCode && (
-                <motion.div 
-                  initial={{ opacity: 0 }} 
-                  animate={{ opacity: 1 }}
-                  className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-center"
-                >
-                  <p className="text-yellow-400/80 text-[10px] font-bold uppercase tracking-widest mb-1">⚠️ Modo Desarrollo</p>
-                  <p className="text-yellow-300 font-mono text-2xl font-bold tracking-[0.3em]">{devCode}</p>
-                </motion.div>
-              )}
-
               {/* Timer and Resend */}
               <div className="text-center space-y-4 pt-2">
                 <p className="text-white/30 text-xs">
@@ -409,6 +424,7 @@ export default function LoginPage() {
                 </p>
                 
                 <button
+                  id="resend-code-btn"
                   type="button"
                   onClick={handleResendCode}
                   disabled={resendTimer > 0 || loading}
