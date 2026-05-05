@@ -100,10 +100,27 @@ export default function AdminDashboardPage() {
       filtered = filtered.filter((c) => c.status === statusFilter);
     }
     
+    // Sort order: Priority (purple) → Pending → In Progress → Resolved → Rejected
+    // Within each group: oldest first (so old claims stay visible)
+    const statusOrder: Record<string, number> = {
+      'PENDING': 1,
+      'IN_PROGRESS': 2,
+      'RESOLVED': 3,
+      'REJECTED': 4
+    };
+
     filtered.sort((a, b) => {
+      // 1. Priority items always come first
       if (a.priority && !b.priority) return -1;
       if (!a.priority && b.priority) return 1;
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
+
+      // 2. Within same priority tier, sort by status group
+      const statusA = statusOrder[a.status] || 99;
+      const statusB = statusOrder[b.status] || 99;
+      if (statusA !== statusB) return statusA - statusB;
+
+      // 3. Within same status group, oldest first (ascending date)
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
 
     setFilteredClaims(filtered);

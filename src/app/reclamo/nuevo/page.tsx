@@ -337,7 +337,7 @@ export default function NuevoReclamoPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-10"
+                className="space-y-14"
               >
                 <div className="space-y-3">
                   <p className="text-white/70 font-medium flex items-center gap-2">
@@ -347,7 +347,7 @@ export default function NuevoReclamoPage() {
                   <p className="text-white/40 text-xs leading-relaxed">Mueva el marcador en el mapa para ubicar el reclamo con precisión.</p>
                 </div>
 
-                <div className="space-y-5">
+                <div className="space-y-6">
                   <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Dirección o Referencia del Reclamo</label>
                   <input
                     type="text"
@@ -385,7 +385,7 @@ export default function NuevoReclamoPage() {
                 </div>
 
                 {/* Botón Usar mi ubicación */}
-                <div className="flex justify-center pt-2 z-20 relative">
+                <div className="flex justify-center pt-6 z-20 relative">
                   <button 
                     type="button"
                     onClick={() => {
@@ -403,7 +403,7 @@ export default function NuevoReclamoPage() {
                 </div>
 
                 {/* Separador visual */}
-                <div className="flex items-center gap-4 py-2">
+                <div className="flex items-center gap-4 py-6">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
                 </div>
 

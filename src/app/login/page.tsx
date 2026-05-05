@@ -467,7 +467,7 @@ export default function LoginPage() {
                 <p className="text-white/50 text-xs uppercase tracking-widest font-medium">Contanos un poco sobre vos</p>
               </div>
 
-              <form onSubmit={handleFinishProfile} className="space-y-10">
+              <form onSubmit={handleFinishProfile} className="space-y-12">
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Tu Nombre</label>
@@ -483,7 +483,7 @@ export default function LoginPage() {
 
                 <div className="space-y-6">
                   <label className="text-white/70 text-xs font-bold uppercase tracking-widest ml-1">¿Cómo te identificás?</label>
-                  <div className="grid grid-cols-1 gap-6">
+                  <div className="grid grid-cols-1 gap-4">
                     {USER_ROLES.map((uRole) => (
                       <label 
                         key={uRole.id}
@@ -519,7 +519,53 @@ export default function LoginPage() {
                 </div>
 
                 {/* --- Términos y Condiciones --- */}
-                <div className="pt-14 mt-6 border-t border-white/10 space-y-6">
+                <div className="pt-16 mt-10 border-t border-white/10 space-y-8">
+                  {/* Links to read documents */}
+                  <div className="flex flex-col gap-3">
+                    <a 
+                      href="/terminos" 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-[#2ECC71]/30 transition-all group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-[#2ECC71]/10 flex items-center justify-center shrink-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" strokeWidth="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white/80 text-sm font-bold group-hover:text-white transition-colors">Términos y Condiciones</p>
+                        <p className="text-white/30 text-[10px] uppercase tracking-wider font-bold">Lectura obligatoria</p>
+                      </div>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20 group-hover:text-[#2ECC71] transition-colors">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </a>
+
+                    <a 
+                      href="/privacidad" 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-[#3498DB]/30 transition-all group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-[#3498DB]/10 flex items-center justify-center shrink-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3498DB" strokeWidth="2">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white/80 text-sm font-bold group-hover:text-white transition-colors">Política de Privacidad</p>
+                        <p className="text-white/30 text-[10px] uppercase tracking-wider font-bold">Lectura obligatoria</p>
+                      </div>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20 group-hover:text-[#3498DB] transition-colors">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </a>
+                  </div>
+
+                  {/* Mandatory acceptance checkbox */}
                   <label className="flex items-start gap-5 cursor-pointer p-6 bg-black/30 rounded-2xl border-2 border-[#2ECC71]/20 hover:border-[#2ECC71]/40 transition-all shadow-lg">
                     <div className="pt-0.5">
                       <input 
@@ -532,21 +578,17 @@ export default function LoginPage() {
                     </div>
                     <div className="flex-1">
                       <p className="text-white/90 text-sm font-semibold leading-relaxed">
-                        Acepto los términos y condiciones de uso.
+                        He leído y acepto los <strong className="text-[#2ECC71]">Términos y Condiciones</strong> y la <strong className="text-[#3498DB]">Política de Privacidad</strong>.
+                      </p>
+                      <p className="text-white/30 text-[10px] mt-2 leading-relaxed">
+                        Al tildar esta casilla, declaro conocer y aceptar las condiciones del servicio.
                       </p>
                     </div>
                   </label>
-
-                  <a 
-                    href="#" 
-                    className="block text-center text-white/40 text-[10px] font-bold uppercase tracking-widest hover:text-white/60 transition-colors mt-4"
-                  >
-                    Ver políticas de privacidad
-                  </a>
                 </div>
 
                 {/* --- Botón y créditos --- */}
-                <div className="pt-6 space-y-5">
+                <div className="pt-10 space-y-5">
                   <button
                     type="submit"
                     disabled={!name || !role || !acceptedTerms}
