@@ -188,59 +188,77 @@ export default function AdminDashboardPage() {
 
   const handleTogglePriority = (claimId: string, e: any) => {
     e.stopPropagation();
-    const updated = claims.map(c => c.id === claimId ? { ...c, priority: !c.priority } : c);
+    // Read fresh data from localStorage to avoid stale state
+    const freshClaims: any[] = JSON.parse(localStorage.getItem('lh_claims') || '[]');
+    const updated = freshClaims.map((c: any) => c.id === claimId ? { ...c, priority: !c.priority } : c);
     localStorage.setItem('lh_claims', JSON.stringify(updated));
     loadData();
     if (selectedClaim?.id === claimId) {
-      setSelectedClaim(updated.find(c => c.id === claimId));
+      setSelectedClaim(updated.find((c: any) => c.id === claimId));
     }
   };
 
   const handleStatusChange = (claimId: string, newStatus: string, reason?: string) => {
-    const updatedClaims = claims.map(c => {
-      if (c.id === claimId) {
-        // Strategic: Notify the user in 'lh_messages'
-        const messages = JSON.parse(localStorage.getItem('lh_messages') || '[]');
-        const now = new Date();
-        const dateStr = now.toLocaleDateString();
-        
-        let statusTitle = 'Actualización de Reclamo';
-        let statusBody = `Novedades sobre su reclamo #${c.id}: el estado ha cambiado a ${newStatus === 'IN_PROGRESS' ? 'EN PROCESO' : newStatus === 'RESOLVED' ? 'RESUELTO' : 'RECHAZADO'}.`;
-        
-        if (newStatus === 'REJECTED') {
-          statusTitle = 'Reclamo No Corresponde';
-          statusBody = `Su reclamo #${c.id} ha sido rechazado. Motivo: ${reason || 'Información insuficiente o no encuadra en servicios municipales.'}`;
-        }
+    if (!claimId) return;
 
-        const newMessage = {
-          id: Date.now(),
-          from: 'Gestión Municipal',
-          title: statusTitle,
-          body: statusBody,
-          date: now.toISOString(),
-          type: newStatus === 'REJECTED' ? 'alert' : 'update',
-          read: false
-        };
-        localStorage.setItem('lh_messages', JSON.stringify([newMessage, ...messages]));
+    // CRITICAL: Read fresh data from localStorage to avoid stale state bugs
+    const freshClaims: any[] = JSON.parse(localStorage.getItem('lh_claims') || '[]');
+    const claimIndex = freshClaims.findIndex((c: any) => c.id === claimId);
+    
+    if (claimIndex === -1) {
+      console.error('Claim not found:', claimId);
+      return;
+    }
 
-        return { 
-          ...c, 
-          status: newStatus, 
-          last_observation: observation,
-          rejection_reason: reason
-        };
-      }
-      return c;
-    });
+    const targetClaim = freshClaims[claimIndex];
 
-    localStorage.setItem('lh_claims', JSON.stringify(updatedClaims));
+    // Send ONE notification message for THIS specific claim only
+    const messages = JSON.parse(localStorage.getItem('lh_messages') || '[]');
+    const now = new Date();
+    
+    let statusTitle = 'Actualización de Reclamo';
+    let statusBody = `Novedades sobre su reclamo #${targetClaim.id}: el estado ha cambiado a ${newStatus === 'IN_PROGRESS' ? 'EN PROCESO' : newStatus === 'RESOLVED' ? 'RESUELTO' : 'RECHAZADO'}.`;
+    
+    if (newStatus === 'REJECTED') {
+      statusTitle = 'Reclamo No Corresponde';
+      statusBody = `Su reclamo #${targetClaim.id} ha sido rechazado. Motivo: ${reason || 'Información insuficiente o no encuadra en servicios municipales.'}`;
+    }
+
+    const newMessage = {
+      id: Date.now(),
+      from: 'Gestión Municipal',
+      title: statusTitle,
+      body: statusBody,
+      date: now.toISOString(),
+      type: newStatus === 'REJECTED' ? 'alert' : 'update',
+      read: false
+    };
+    localStorage.setItem('lh_messages', JSON.stringify([newMessage, ...messages]));
+
+    // Update ONLY this specific claim in the array
+    freshClaims[claimIndex] = { 
+      ...targetClaim, 
+      status: newStatus, 
+      last_observation: observation,
+      rejection_reason: newStatus === 'REJECTED' ? reason : undefined
+    };
+
+    localStorage.setItem('lh_claims', JSON.stringify(freshClaims));
+
+    // Clear ALL related UI state
     setObservation('');
+    setRejectionReason('');
+    setShowRejection(false);
     setSelectedClaim(null);
     loadData();
   };
 
   const handleSelectClaim = (claim: any) => {
     setSelectedClaim(claim);
+    // Reset action states when switching claims
+    setObservation('');
+    setRejectionReason('');
+    setShowRejection(false);
     if (claim.location) {
       setMapCenter(claim.location);
       setMapZoom(17);
