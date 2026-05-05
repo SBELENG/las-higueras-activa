@@ -518,65 +518,70 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* --- Términos y Condiciones --- */}
-                <div className="pt-16 mt-10 border-t border-white/10 space-y-8">
-                  {/* Links to read documents */}
-                  <div className="flex flex-col gap-3">
-                    <a 
-                      href="/terminos" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-[#2ECC71]/30 transition-all group"
+                {/* --- Documentos Legales y Aceptación --- */}
+                <div className="pt-16 mt-12 border-t border-white/10 space-y-10">
+
+                  {/* Section title */}
+                  <p className="text-[10px] font-black text-white/30 tracking-[0.2em] uppercase text-center">
+                    Documentación Legal
+                  </p>
+
+                  {/* Links to read documents - symmetric 2-column grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <button 
+                      type="button"
+                      onClick={() => window.open('/terminos', '_blank')}
+                      className="flex flex-col items-center gap-3 p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-[#2ECC71]/40 transition-all group active:scale-95"
                     >
-                      <div className="w-10 h-10 rounded-xl bg-[#2ECC71]/10 flex items-center justify-center shrink-0">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" strokeWidth="2">
+                      <div className="w-12 h-12 rounded-xl bg-[#2ECC71]/10 flex items-center justify-center shrink-0 group-hover:bg-[#2ECC71]/20 transition-colors">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" strokeWidth="2">
                           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                           <polyline points="14 2 14 8 20 8" />
+                          <line x1="16" y1="13" x2="8" y2="13" />
+                          <line x1="16" y1="17" x2="8" y2="17" />
                         </svg>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-white/80 text-sm font-bold group-hover:text-white transition-colors">Términos y Condiciones</p>
-                        <p className="text-white/30 text-[10px] uppercase tracking-wider font-bold">Lectura obligatoria</p>
+                      <div className="text-center">
+                        <p className="text-white/80 text-xs font-bold group-hover:text-white transition-colors leading-tight">Términos y Condiciones</p>
+                        <p className="text-[#2ECC71]/50 text-[9px] uppercase tracking-wider font-bold mt-1">Leer ↗</p>
                       </div>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20 group-hover:text-[#2ECC71] transition-colors">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
-                      </svg>
-                    </a>
+                    </button>
 
-                    <a 
-                      href="/privacidad" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-[#3498DB]/30 transition-all group"
+                    <button 
+                      type="button"
+                      onClick={() => window.open('/privacidad', '_blank')}
+                      className="flex flex-col items-center gap-3 p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-[#3498DB]/40 transition-all group active:scale-95"
                     >
-                      <div className="w-10 h-10 rounded-xl bg-[#3498DB]/10 flex items-center justify-center shrink-0">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3498DB" strokeWidth="2">
+                      <div className="w-12 h-12 rounded-xl bg-[#3498DB]/10 flex items-center justify-center shrink-0 group-hover:bg-[#3498DB]/20 transition-colors">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3498DB" strokeWidth="2">
                           <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                         </svg>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-white/80 text-sm font-bold group-hover:text-white transition-colors">Política de Privacidad</p>
-                        <p className="text-white/30 text-[10px] uppercase tracking-wider font-bold">Lectura obligatoria</p>
+                      <div className="text-center">
+                        <p className="text-white/80 text-xs font-bold group-hover:text-white transition-colors leading-tight">Política de Privacidad</p>
+                        <p className="text-[#3498DB]/50 text-[9px] uppercase tracking-wider font-bold mt-1">Leer ↗</p>
                       </div>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20 group-hover:text-[#3498DB] transition-colors">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
-                      </svg>
-                    </a>
+                    </button>
+                  </div>
+
+                  {/* Spacer */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
                   </div>
 
                   {/* Mandatory acceptance checkbox */}
-                  <label className="flex items-start gap-5 cursor-pointer p-6 bg-black/30 rounded-2xl border-2 border-[#2ECC71]/20 hover:border-[#2ECC71]/40 transition-all shadow-lg">
-                    <div className="pt-0.5">
+                  <label className="flex items-start gap-4 cursor-pointer p-5 bg-black/30 rounded-2xl border-2 border-white/10 hover:border-[#2ECC71]/40 transition-all shadow-lg">
+                    <div className="pt-0.5 shrink-0">
                       <input 
                         type="checkbox" 
                         required
-                        className="w-6 h-6 accent-[#2ECC71] rounded shrink-0 cursor-pointer"
+                        className="w-6 h-6 accent-[#2ECC71] rounded cursor-pointer"
                         checked={acceptedTerms}
                         onChange={(e) => setAcceptedTerms(e.target.checked)}
                       />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <p className="text-white/90 text-sm font-semibold leading-relaxed">
                         He leído y acepto los <strong className="text-[#2ECC71]">Términos y Condiciones</strong> y la <strong className="text-[#3498DB]">Política de Privacidad</strong>.
                       </p>
@@ -588,7 +593,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* --- Botón y créditos --- */}
-                <div className="pt-10 space-y-5">
+                <div className="pt-14 space-y-6">
                   <button
                     type="submit"
                     disabled={!name || !role || !acceptedTerms}
