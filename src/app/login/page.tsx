@@ -244,8 +244,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleFinishProfile = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFinishProfile = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!name || !role || !acceptedTerms) return;
 
     // Save profile and log in
@@ -574,8 +574,7 @@ export default function LoginPage() {
                   <label className="flex items-start gap-4 cursor-pointer p-5 bg-black/30 rounded-2xl border-2 border-white/10 hover:border-[#2ECC71]/40 transition-all shadow-lg">
                     <div className="pt-0.5 shrink-0">
                       <input 
-                        type="checkbox" 
-                        required
+                        type="checkbox"
                         className="w-6 h-6 accent-[#2ECC71] rounded cursor-pointer"
                         checked={acceptedTerms}
                         onChange={(e) => setAcceptedTerms(e.target.checked)}
@@ -595,7 +594,8 @@ export default function LoginPage() {
                 {/* --- Botón y créditos --- */}
                 <div className="pt-14 space-y-6">
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={handleFinishProfile}
                     disabled={!name || !role || !acceptedTerms}
                     className="w-full bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-black py-5 px-8 rounded-2xl shadow-[0_8px_30px_-8px_rgba(46,204,113,0.5)] transition-all transform active:scale-95 text-base tracking-wide"
                   >

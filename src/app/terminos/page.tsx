@@ -1,10 +1,16 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function TerminosPage() {
-  const router = useRouter();
+  const handleVolver = () => {
+    // If opened as new tab, close it; otherwise go back
+    if (window.history.length <= 1) {
+      window.close();
+    } else {
+      window.history.back();
+    }
+  };
 
   return (
     <main className="min-h-screen relative p-6 flex flex-col items-center">
@@ -12,13 +18,13 @@ export default function TerminosPage() {
 
       <div className="w-full max-w-2xl z-10 pt-4 space-y-8">
         <button
-          onClick={() => router.back()}
+          onClick={handleVolver}
           className="text-white/60 hover:text-white flex items-center gap-2 transition-colors"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Volver
+          Cerrar
         </button>
 
         <div className="glass-card p-8 md:p-12 space-y-8 border-white/10">
