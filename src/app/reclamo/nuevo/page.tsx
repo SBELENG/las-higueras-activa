@@ -47,6 +47,8 @@ export default function NuevoReclamoPage() {
   const [claimLocation, setClaimLocation] = useState({ lat: -33.0922, lng: -64.2889 });
   const [loading, setLoading] = useState(false);
   const [limitError, setLimitError] = useState(false);
+  const [usingGeoLocation, setUsingGeoLocation] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
 
   // Two separate references: one for direct camera, one for gallery
   const photoInputRef = React.useRef<HTMLInputElement>(null);
@@ -337,9 +339,9 @@ export default function NuevoReclamoPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-14"
+                className="space-y-8"
               >
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <p className="text-white/70 font-medium flex items-center gap-2">
                     <span className="text-2xl">📍</span>
                     ¿Dónde está el problema?
@@ -347,16 +349,18 @@ export default function NuevoReclamoPage() {
                   <p className="text-white/40 text-xs leading-relaxed">Mueva el marcador en el mapa para ubicar el reclamo con precisión.</p>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-3">
                   <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Dirección o Referencia del Reclamo</label>
                   <input
                     type="text"
-                    required
                     placeholder="Ej: Calle San Martín 123 o 'Frente al club'"
                     className="w-full bg-white/5 border border-white/20 rounded-2xl px-6 py-5 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
                     value={claimAddress}
-                    onChange={(e) => setClaimAddress(e.target.value)}
+                    onChange={(e) => { setClaimAddress(e.target.value); if (usingGeoLocation && e.target.value) setUsingGeoLocation(false); }}
                   />
+                  {!claimAddress && (
+                    <p className="text-white/30 text-[10px] italic ml-1">Si no conocés la dirección, usá el botón de ubicación actual más abajo.</p>
+                  )}
                 </div>
 
                 <div className="w-full h-[320px] rounded-3xl overflow-hidden border border-white/10 bg-black/20 relative shadow-inner">
@@ -385,37 +389,87 @@ export default function NuevoReclamoPage() {
                 </div>
 
                 {/* Botón Usar mi ubicación */}
-                <div className="flex justify-center pt-6 z-20 relative">
+                <div className="flex justify-center z-20 relative">
                   <button 
                     type="button"
+                    disabled={geoLoading}
                     onClick={() => {
                       if ("geolocation" in navigator) {
-                        navigator.geolocation.getCurrentPosition((pos) => {
-                          setClaimLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                        });
+                        setGeoLoading(true);
+                        navigator.geolocation.getCurrentPosition(
+                          (pos) => {
+                            const lat = pos.coords.latitude;
+                            const lng = pos.coords.longitude;
+                            setClaimLocation({ lat, lng });
+                            setUsingGeoLocation(true);
+                            setGeoLoading(false);
+                            // Try to reverse-geocode the coordinates to auto-fill address
+                            if (typeof google !== 'undefined' && google.maps) {
+                              const geocoder = new google.maps.Geocoder();
+                              geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
+                                if (status === 'OK' && results?.[0]) {
+                                  setClaimAddress(results[0].formatted_address);
+                                } else {
+                                  // If geocoding fails, set coords as address
+                                  setClaimAddress(`GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+                                }
+                              });
+                            } else {
+                              setClaimAddress(`GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+                            }
+                          },
+                          (error) => {
+                            setGeoLoading(false);
+                            alert('No se pudo obtener la ubicación. Asegurate de tener el GPS activado y los permisos otorgados.');
+                          },
+                          { enableHighAccuracy: true, timeout: 10000 }
+                        );
+                      } else {
+                        alert('Tu navegador no soporta geolocalización.');
                       }
                     }}
-                    className="bg-white/10 backdrop-blur-xl text-white px-8 py-4 rounded-2xl text-sm font-bold shadow-[0_8px_30px_-8px_rgba(52,152,219,0.4)] border border-[#3498DB]/30 flex items-center justify-center gap-3 w-full hover:bg-[#3498DB]/20 hover:border-[#3498DB]/60 transition-all transform active:scale-95"
+                    className={`backdrop-blur-xl text-white px-8 py-4 rounded-2xl text-sm font-bold shadow-[0_8px_30px_-8px_rgba(52,152,219,0.4)] border flex items-center justify-center gap-3 w-full transition-all transform active:scale-95 ${
+                      usingGeoLocation 
+                        ? 'bg-[#2ECC71]/20 border-[#2ECC71]/50 shadow-[0_8px_30px_-8px_rgba(46,204,113,0.4)]' 
+                        : 'bg-white/10 border-[#3498DB]/30 hover:bg-[#3498DB]/20 hover:border-[#3498DB]/60'
+                    }`}
                   >
-                    <span className="text-xl leading-none">📍</span>
-                    <span>Usar mi ubicación actual</span>
+                    {geoLoading ? (
+                      <>
+                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span>Obteniendo ubicación...</span>
+                      </>
+                    ) : usingGeoLocation ? (
+                      <>
+                        <span className="text-xl leading-none">✅</span>
+                        <span>Ubicación obtenida</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-xl leading-none">📍</span>
+                        <span>Usar mi ubicación actual</span>
+                      </>
+                    )}
                   </button>
                 </div>
 
                 {/* Separador visual */}
-                <div className="flex items-center gap-4 py-6">
+                <div className="flex items-center gap-4 py-2">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
                 </div>
 
                 {/* Botón Confirmar y Enviar */}
-                <div>
+                <div className="pb-8">
                   <button
                     onClick={handleSubmit}
-                    disabled={!claimAddress || loading}
+                    disabled={(!claimAddress && !usingGeoLocation) || loading}
                     className="w-full bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-black py-5 px-8 rounded-2xl shadow-[0_8px_30px_-8px_rgba(46,204,113,0.5)] transition-all transform active:scale-95 text-base tracking-wide"
                   >
                     {loading ? 'Enviando Reclamo...' : '✅ Confirmar y Enviar'}
                   </button>
+                  {!claimAddress && !usingGeoLocation && (
+                    <p className="text-white/25 text-[10px] text-center mt-3 italic">Ingresá una dirección o usá tu ubicación actual para poder enviar</p>
+                  )}
                 </div>
               </motion.div>
             )}

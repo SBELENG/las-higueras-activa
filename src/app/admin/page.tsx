@@ -442,35 +442,15 @@ export default function AdminDashboardPage() {
             </div>
           </aside>
 
-          <section className="lg:col-span-8 relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black min-h-[350px] lg:min-h-0 order-first lg:order-none my-2 lg:my-0">
-            <ErrorBoundary fallback={
-              <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-black/40 rounded-3xl border border-white/10">
-                <span className="text-5xl">🗺️</span>
-                <p className="text-white/30 text-xs font-black uppercase tracking-widest">Mapa no disponible</p>
-                <p className="text-white/20 text-[10px] text-center max-w-xs px-8">Configurá la clave de Google Maps en Vercel para activar el mapa</p>
-              </div>
-            }>
-              <div className="absolute inset-0">
-                <InteractiveMap
-                  center={mapCenter}
-                  zoom={mapZoom}
-                  markers={filteredClaims.filter(c => c.location).map(c => ({
-                    id: c.id,
-                    position: c.location,
-                    status: c.status,
-                    onClick: () => handleSelectClaim(c)
-                  }))}
-                />
-              </div>
-            </ErrorBoundary>
-
+          <section className="lg:col-span-8 flex flex-col lg:relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black min-h-[350px] lg:min-h-0 order-first lg:order-none my-2 lg:my-0">
+            {/* On mobile: claim detail card ABOVE the map (no overlap). On desktop: overlay on the map */}
             <AnimatePresence>
               {selectedClaim && (
                   <motion.div 
-                    initial={{ x: "100%", opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: "100%", opacity: 0 }}
-                    className="absolute inset-2 md:inset-6 lg:top-10 lg:right-10 lg:bottom-10 lg:left-auto lg:w-[600px] bg-[#0F172A] backdrop-blur-3xl rounded-3xl border border-white/20 shadow-[0_0_120px_rgba(0,0,0,1)] overflow-hidden flex flex-col z-[100] transition-all duration-300"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="relative lg:absolute lg:inset-2 lg:top-4 lg:right-4 lg:bottom-4 lg:left-auto lg:w-[600px] bg-[#0F172A] backdrop-blur-3xl lg:rounded-3xl border-b lg:border border-white/20 shadow-[0_0_120px_rgba(0,0,0,1)] overflow-hidden flex flex-col z-[100] transition-all duration-300 max-h-[60vh] lg:max-h-none"
                   >
                   <div 
                     className="px-6 py-6 border-b border-white/10 flex justify-between items-center bg-white/5 transition-all w-full"
@@ -627,10 +607,34 @@ export default function AdminDashboardPage() {
               )}
             </AnimatePresence>
 
-            <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 text-white/60 text-[10px] font-bold flex gap-4">
-               <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#E74C3C]"></span> PENDIENTE</span>
-               <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#F1C40F]"></span> EN PROCESO</span>
-               <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#2ECC71]"></span> RESUELTO</span>
+            {/* Map section - below the card on mobile, behind on desktop */}
+            <div className="flex-1 relative min-h-[300px]">
+              <ErrorBoundary fallback={
+                <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-black/40 rounded-3xl border border-white/10">
+                  <span className="text-5xl">🗺️</span>
+                  <p className="text-white/30 text-xs font-black uppercase tracking-widest">Mapa no disponible</p>
+                  <p className="text-white/20 text-[10px] text-center max-w-xs px-8">Configurá la clave de Google Maps en Vercel para activar el mapa</p>
+                </div>
+              }>
+                <div className="absolute inset-0">
+                  <InteractiveMap
+                    center={mapCenter}
+                    zoom={mapZoom}
+                    markers={filteredClaims.filter(c => c.location).map(c => ({
+                      id: c.id,
+                      position: c.location,
+                      status: c.status,
+                      onClick: () => handleSelectClaim(c)
+                    }))}
+                  />
+                </div>
+              </ErrorBoundary>
+
+              <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 text-white/60 text-[10px] font-bold flex gap-4 z-10">
+                 <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#E74C3C]"></span> PENDIENTE</span>
+                 <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#F1C40F]"></span> EN PROCESO</span>
+                 <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#2ECC71]"></span> RESUELTO</span>
+              </div>
             </div>
           </section>
         </div>

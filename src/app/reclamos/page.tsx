@@ -14,6 +14,24 @@ export default function MisReclamosPage() {
   useEffect(() => {
     // Simulating fetching from localStorage/mock API
     const savedClaims = JSON.parse(localStorage.getItem('lh_claims') || '[]');
+    
+    // Sort by status order: PENDING → IN_PROGRESS → RESOLVED → REJECTED
+    // Within each group: oldest first (ascending date)
+    const statusOrder: Record<string, number> = {
+      'PENDING': 1,
+      'IN_PROGRESS': 2,
+      'RESOLVED': 3,
+      'REJECTED': 4
+    };
+    
+    savedClaims.sort((a: any, b: any) => {
+      const statusA = statusOrder[a.status] || 99;
+      const statusB = statusOrder[b.status] || 99;
+      if (statusA !== statusB) return statusA - statusB;
+      // Within same status: oldest first
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+    
     setClaims(savedClaims);
     setLoading(false);
   }, []);
