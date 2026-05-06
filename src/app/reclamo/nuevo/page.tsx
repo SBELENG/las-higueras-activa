@@ -299,10 +299,7 @@ export default function NuevoReclamoPage() {
                         className="w-full flex flex-col items-center justify-center gap-3 p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#2ECC71]/50 transition-all cursor-pointer"
                       >
                         <span className="text-4xl text-[#2ECC71]">📷</span>
-                        <div className="flex flex-col items-center">
-                          <span className="text-white/90 text-sm font-bold">Tomar Foto</span>
-                          <span className="text-white/30 text-[10px] uppercase tracking-wider mt-1">ABRIR CÁMARA</span>
-                        </div>
+                        <span className="text-white/90 text-sm font-bold">Tomar Foto</span>
                       </button>
                       
                       <button
@@ -311,16 +308,13 @@ export default function NuevoReclamoPage() {
                         className="w-full flex flex-col items-center justify-center gap-3 p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#3498DB]/50 transition-all cursor-pointer"
                       >
                         <span className="text-4xl text-[#3498DB]">🖼️</span>
-                        <div className="flex flex-col items-center">
-                          <span className="text-white/90 text-sm font-bold">Subir Galería</span>
-                          <span className="text-white/30 text-[10px] uppercase tracking-wider mt-1">ELEGIR ARCHIVO</span>
-                        </div>
+                        <span className="text-white/90 text-sm font-bold">Subir Galería</span>
                       </button>
                     </div>
                   )}
                 </div>
 
-                <div className="pt-10">
+                <div className="pt-16">
                   <button
                     onClick={handleNext}
                     disabled={!description || (category?.critical && !photo)}
@@ -346,7 +340,7 @@ export default function NuevoReclamoPage() {
                     <span className="text-2xl">📍</span>
                     ¿Dónde está el problema?
                   </p>
-                  <p className="text-white/40 text-xs leading-relaxed">Mueva el marcador en el mapa para ubicar el reclamo con precisión.</p>
+                  <p className="text-white/70 text-sm leading-relaxed">Mueva el marcador en el mapa para ubicar el reclamo con precisión.</p>
                 </div>
 
                 <div className="space-y-3">
@@ -359,7 +353,7 @@ export default function NuevoReclamoPage() {
                     onChange={(e) => { setClaimAddress(e.target.value); if (usingGeoLocation && e.target.value) setUsingGeoLocation(false); }}
                   />
                   {!claimAddress && (
-                    <p className="text-white/30 text-[10px] italic ml-1">Si no conocés la dirección, usá el botón de ubicación actual más abajo.</p>
+                    <p className="text-white/60 text-xs italic ml-1 mt-1">Si no conocés la dirección, usá el botón de ubicación actual más abajo.</p>
                   )}
                 </div>
 
@@ -454,7 +448,7 @@ export default function NuevoReclamoPage() {
                 </div>
 
                 {/* Separador visual */}
-                <div className="flex items-center gap-4 py-2">
+                <div className="flex items-center gap-4 py-4">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
                 </div>
 

@@ -378,7 +378,7 @@ export default function AdminDashboardPage() {
             <div className="flex-1 flex flex-col gap-3 overflow-hidden">
               <div className="flex justify-between items-center px-4 shrink-0">
                 <h2 className="text-sm font-black text-white/80 uppercase tracking-wider">Lista de Reclamos</h2>
-                <span className="text-[10px] text-white/30 font-bold">{filteredClaims.length} REPORTES</span>
+                <span className="text-[10px] text-white/60 font-bold">{filteredClaims.length} REPORTES</span>
               </div>
               
               <div 
@@ -400,19 +400,22 @@ export default function AdminDashboardPage() {
                             PRIORIDAD
                           </span>
                         )}
-                        <span className="text-[11px] font-black text-white shrink-0">
-                           {(() => {
-                             const d = new Date(claim.date);
-                             if (isNaN(d.getTime())) return claim.date;
-                             return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear().toString().slice(-2)} - ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-                           })()}
-                        </span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className={`w-3 h-3 rounded-full shadow-lg ${claim.status === 'RESOLVED' ? 'bg-[#2ECC71]' : claim.status === 'IN_PROGRESS' ? 'bg-[#F1C40F]' : claim.status === 'REJECTED' ? 'bg-white/40' : 'bg-[#E74C3C]'}`} />
+                          <span className="text-[11px] font-black text-white">
+                             {(() => {
+                               const d = new Date(claim.date);
+                               if (isNaN(d.getTime())) return claim.date;
+                               return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear().toString().slice(-2)} - ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                             })()}
+                          </span>
+                        </div>
                       </div>
-                      {/* Swapped: Name as Title */}
+                      {/* Name as Title */}
                       <p className="text-sm font-black text-white uppercase tracking-tight leading-none mb-1">
                         {claim.user_name}
                       </p>
-                      {/* Swapped: Category as Subtitle */}
+                      {/* Category as Subtitle */}
                       <p className="text-[10px] text-white/50 truncate flex items-center gap-1.5">
                          <span className="text-[#2ECC71] font-black uppercase px-2 py-0.5 bg-[#2ECC71]/10 rounded-md">{claim.category}</span>
                          <span className="text-white/10">|</span> 📍 {claim.address}
@@ -421,7 +424,6 @@ export default function AdminDashboardPage() {
                         <p className="text-[9px] text-white/20 truncate uppercase font-black tracking-widest italic flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-white/20"></span> {claim.user_role}
                         </p>
-                        <div className={`w-2 h-2 rounded-full shadow-lg ${claim.status === 'RESOLVED' ? 'bg-[#2ECC71]' : claim.status === 'IN_PROGRESS' ? 'bg-[#F1C40F]' : claim.status === 'REJECTED' ? 'bg-white/40' : 'bg-[#E74C3C]'}`} />
                       </div>
                     </div>
                   </div>
@@ -595,7 +597,7 @@ export default function AdminDashboardPage() {
                             Rechazar Reclamo (No Corresponde)
                           </button>
                           {!observation.trim() && (
-                            <p className="text-[9px] text-white/20 text-center uppercase tracking-widest italic animate-pulse">
+                            <p className="text-[10px] text-white/50 text-center uppercase tracking-widest italic">
                                * Complete las observaciones para habilitar acciones
                             </p>
                           )}
