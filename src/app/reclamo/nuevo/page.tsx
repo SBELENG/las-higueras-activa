@@ -49,6 +49,7 @@ export default function NuevoReclamoPage() {
   const [limitError, setLimitError] = useState(false);
   const [usingGeoLocation, setUsingGeoLocation] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
+  const [markerMoved, setMarkerMoved] = useState(false);
 
   // Two separate references: one for direct camera, one for gallery
   const photoInputRef = React.useRef<HTMLInputElement>(null);
@@ -363,7 +364,25 @@ export default function NuevoReclamoPage() {
                     zoom={15}
                     onMarkerDragEnd={(e: any) => {
                       if (e.latLng) {
-                        setClaimLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+                        const lat = e.latLng.lat();
+                        const lng = e.latLng.lng();
+                        setClaimLocation({ lat, lng });
+                        setMarkerMoved(true);
+                        // Auto-fill address with GPS coords if address is empty
+                        if (!claimAddress) {
+                          if (typeof google !== 'undefined' && google.maps) {
+                            const geocoder = new google.maps.Geocoder();
+                            geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
+                              if (status === 'OK' && results?.[0]) {
+                                setClaimAddress(results[0].formatted_address);
+                              } else {
+                                setClaimAddress(`GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+                              }
+                            });
+                          } else {
+                            setClaimAddress(`GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+                          }
+                        }
                       }
                     }}
                     draggableMarker
@@ -383,7 +402,7 @@ export default function NuevoReclamoPage() {
                 </div>
 
                 {/* Botón Usar mi ubicación */}
-                <div className="flex justify-center z-20 relative">
+                <div className="flex justify-center z-20 relative mt-4">
                   <button 
                     type="button"
                     disabled={geoLoading}
@@ -448,7 +467,7 @@ export default function NuevoReclamoPage() {
                 </div>
 
                 {/* Separador visual */}
-                <div className="flex items-center gap-4 py-4">
+                <div className="flex items-center gap-4 py-6">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
                 </div>
 
@@ -456,13 +475,13 @@ export default function NuevoReclamoPage() {
                 <div className="pb-8">
                   <button
                     onClick={handleSubmit}
-                    disabled={(!claimAddress && !usingGeoLocation) || loading}
+                    disabled={(!claimAddress && !usingGeoLocation && !markerMoved) || loading}
                     className="w-full bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-black py-5 px-8 rounded-2xl shadow-[0_8px_30px_-8px_rgba(46,204,113,0.5)] transition-all transform active:scale-95 text-base tracking-wide"
                   >
                     {loading ? 'Enviando Reclamo...' : '✅ Confirmar y Enviar'}
                   </button>
-                  {!claimAddress && !usingGeoLocation && (
-                    <p className="text-white/25 text-[10px] text-center mt-3 italic">Ingresá una dirección o usá tu ubicación actual para poder enviar</p>
+                  {!claimAddress && !usingGeoLocation && !markerMoved && (
+                    <p className="text-white/50 text-xs text-center mt-3 italic">Ingresá una dirección, usá tu ubicación o mové el marcador en el mapa</p>
                   )}
                 </div>
               </motion.div>
