@@ -40,11 +40,10 @@ body {
 /* More reliable background for mobile browsers - GPU composited layer */
 .app-background-image {
   position: fixed;
-  top: 0;
+  top: -10vh;
   left: 0;
   width: 100vw;
-  height: 100vh;
-  height: 100dvh;
+  height: 120vh;
   background-image: url('/assets/foto-fondo.webp');
   background-size: cover;
   background-position: center;
@@ -61,11 +60,10 @@ body {
 body::before {
   content: '';
   position: fixed;
-  top: 0;
+  top: -10vh;
   left: 0;
   width: 100vw;
-  height: 100vh;
-  height: 100dvh;
+  height: 120vh;
   background: var(--overlay-dark);
   z-index: -1;
   pointer-events: none;
