@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/GlassCard';
 import GlassHeader from '@/components/GlassHeader';
+import { listenUnreadMessages } from '@/lib/db';
 
 export default function HomePage() {
   const router = useRouter();
@@ -17,9 +18,20 @@ export default function HomePage() {
 
   useEffect(() => {
     try {
-      const msgs = JSON.parse(localStorage.getItem('lh_messages') || '[]');
-      setUnreadMessages(msgs.filter((m: any) => !m.read).length);
-    } catch (e) {}
+      const userStr = localStorage.getItem('lh_activa_user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        // Start listening to unread messages in real-time
+        const unsubscribe = listenUnreadMessages(user.phone, (count) => {
+          setUnreadMessages(count);
+        });
+        
+        // Cleanup listener on unmount
+        return () => unsubscribe();
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }, []);
 
   useEffect(() => {

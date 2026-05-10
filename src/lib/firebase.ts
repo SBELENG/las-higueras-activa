@@ -3,6 +3,8 @@
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -16,6 +18,8 @@ const firebaseConfig = {
 // Initialize Firebase (singleton pattern)
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Set language to Spanish
 auth.languageCode = 'es';
@@ -93,4 +97,4 @@ export async function verifyCode(code: string) {
   return result.user;
 }
 
-export { auth, app };
+export { auth, app, db, storage };

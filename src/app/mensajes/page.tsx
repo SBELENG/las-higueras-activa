@@ -3,23 +3,39 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getUserMessages, markMessageRead } from '@/lib/db';
 
 export default function MensajesPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<any[]>([]);
 
   useEffect(() => {
-    // Load messages from local storage
-    const saved = localStorage.getItem('lh_messages');
-    if (saved) {
-      setMessages(JSON.parse(saved));
+    async function loadMessages() {
+      const userStr = localStorage.getItem('lh_activa_user');
+      if (!userStr) return;
+      const user = JSON.parse(userStr);
+      
+      try {
+        const userMsgs = await getUserMessages(user.phone);
+        setMessages(userMsgs);
+      } catch (e) {
+        console.error("Error loading messages:", e);
+      }
     }
+    loadMessages();
   }, []);
 
-  const markAsRead = (id: number) => {
+  const markAsRead = async (id: string) => {
+    // Update local state immediately for UI
     const updated = messages.map(m => m.id === id ? { ...m, read: true } : m);
     setMessages(updated);
-    localStorage.setItem('lh_messages', JSON.stringify(updated));
+    
+    // Update in Firestore
+    try {
+      await markMessageRead(id);
+    } catch (e) {
+      console.error("Error updating message:", e);
+    }
   };
 
   return (
@@ -70,7 +86,7 @@ export default function MensajesPage() {
                 </p>
                 
                 <div className="flex justify-between items-center text-[10px] text-white/30 font-bold uppercase tracking-wider">
-                  <span>{new Date(msg.date).toLocaleDateString('es-AR')}</span>
+                  <span>{msg.date?.toDate ? msg.date.toDate().toLocaleDateString('es-AR') : new Date(msg.date).toLocaleDateString('es-AR')}</span>
                   {msg.type === 'alert' && <span className="text-[#E74C3C]">Aviso Crítico</span>}
                   {msg.type === 'info' && <span className="text-[#3498DB]">Información</span>}
                   {msg.type === 'update' && <span className="text-[#F1C40F]">Trámite</span>}

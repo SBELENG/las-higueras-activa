@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import StatusBadge from '@/components/StatusBadge';
 import GlassCard from '@/components/GlassCard';
+import { getUserClaims, Claim } from '@/lib/db';
 
 export default function MisReclamosPage() {
   const router = useRouter();
@@ -12,28 +13,45 @@ export default function MisReclamosPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulating fetching from localStorage/mock API
-    const savedClaims = JSON.parse(localStorage.getItem('lh_claims') || '[]');
+    async function loadClaims() {
+      try {
+        const userStr = localStorage.getItem('lh_activa_user');
+        if (!userStr) {
+          setLoading(false);
+          return;
+        }
+        
+        const user = JSON.parse(userStr);
+        const userClaims = await getUserClaims(user.phone);
+        
+        // Sort by status order: PENDING → IN_PROGRESS → RESOLVED → REJECTED
+        const statusOrder: Record<string, number> = {
+          'PENDING': 1,
+          'IN_PROGRESS': 2,
+          'RESOLVED': 3,
+          'REJECTED': 4
+        };
+        
+        userClaims.sort((a, b) => {
+          const statusA = statusOrder[a.status] || 99;
+          const statusB = statusOrder[b.status] || 99;
+          if (statusA !== statusB) return statusA - statusB;
+          
+          // Within same status: oldest first
+          const timeA = a.date?.toMillis ? a.date.toMillis() : 0;
+          const timeB = b.date?.toMillis ? b.date.toMillis() : 0;
+          return timeA - timeB; // oldest first
+        });
+        
+        setClaims(userClaims);
+      } catch (e) {
+        console.error("Error loading claims:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
     
-    // Sort by status order: PENDING → IN_PROGRESS → RESOLVED → REJECTED
-    // Within each group: oldest first (ascending date)
-    const statusOrder: Record<string, number> = {
-      'PENDING': 1,
-      'IN_PROGRESS': 2,
-      'RESOLVED': 3,
-      'REJECTED': 4
-    };
-    
-    savedClaims.sort((a: any, b: any) => {
-      const statusA = statusOrder[a.status] || 99;
-      const statusB = statusOrder[b.status] || 99;
-      if (statusA !== statusB) return statusA - statusB;
-      // Within same status: oldest first
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
-    
-    setClaims(savedClaims);
-    setLoading(false);
+    loadClaims();
   }, []);
 
   const containerVariants = {
@@ -110,9 +128,9 @@ export default function MisReclamosPage() {
                   <div className="flex items-center gap-2 mb-3 pl-1">
                     <span className="text-[10px] text-white/30">📅</span>
                     <p className="text-white/40 text-[11px] font-semibold">
-                      {claim.date
-                        ? new Date(claim.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                        : '—'}
+                      {claim.date?.toDate 
+                        ? claim.date.toDate().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        : claim.date ? new Date(claim.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                     </p>
                   </div>
 

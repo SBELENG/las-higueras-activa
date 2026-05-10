@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import StepIndicator from '@/components/StepIndicator';
 import dynamicImport from 'next/dynamic';
+import { createClaim } from '@/lib/db';
 
 const InteractiveMap = dynamicImport(() => import('../../../components/InteractiveMap'), { 
   ssr: false,
@@ -74,55 +75,33 @@ export default function NuevoReclamoPage() {
     else router.push('/home');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const user = JSON.parse(localStorage.getItem('lh_activa_user') || '{}');
-    const claims = JSON.parse(localStorage.getItem('lh_claims') || '[]');
-    
-    // Generate custom ID: YYMMDD + Serial (reset monthly)
-    const now = new Date();
-    const year = now.getFullYear().toString().slice(-2);
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const datePrefix = `${year}${month}${day}`;
-    
-    const currentMonthPrefix = `${year}${month}`;
-    const monthlyClaims = claims.filter((c: any) => c.id?.toString().startsWith(currentMonthPrefix));
-    const nextSequence = (monthlyClaims.length + 1).toString().padStart(4, '0');
-    const newId = `${datePrefix}${nextSequence}`;
-
-    const newClaim = {
-      id: newId,
-      category: category.label,
-      description,
-      photo,
-      address: claimAddress,
-      location: claimLocation,
-      user_name: user.name || 'Vecino Invitado',
-      user_role: user.role || 'vecino',
-      status: 'PENDING',
-      date: now.toISOString(),
-    };
-
     try {
-      localStorage.setItem('lh_claims', JSON.stringify([...claims, newClaim]));
-    } catch (e) {
-      console.warn("Local storage full, attempting to clear space...");
-      if (claims.length > 10) {
-        const smallerClaims = claims.slice(-10);
-        localStorage.setItem('lh_claims', JSON.stringify([...smallerClaims, newClaim]));
-      } else {
-        newClaim.photo = null;
-        localStorage.setItem('lh_claims', JSON.stringify([...claims, newClaim]));
-      }
-    }
+      const user = JSON.parse(localStorage.getItem('lh_activa_user') || '{}');
+      
+      const newClaim = {
+        user_phone: user.phone || 'Desconocido',
+        user_name: user.name || 'Vecino Invitado',
+        user_role: user.role || 'vecino',
+        category: category.label,
+        description,
+        address: claimAddress,
+        location: claimLocation,
+        photoBase64: photo
+      };
 
-    setTimeout(() => {
-      setLoading(false);
+      await createClaim(newClaim as any);
+      
       router.push('/home');
-    }, 1500);
+    } catch (e) {
+      console.error("Error al enviar reclamo:", e);
+      alert("Error al enviar el reclamo. Por favor, intente de nuevo.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

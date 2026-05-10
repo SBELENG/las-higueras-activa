@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamicMap from 'next/dynamic';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { getAllClaims, updateClaimStatus, toggleClaimPriority, createMessage, Claim } from '@/lib/db';
 
 const InteractiveMap = dynamicMap(() => import('../../components/InteractiveMap'), { 
   ssr: false,
@@ -65,9 +66,10 @@ export default function AdminDashboardPage() {
     }
   }, []);
 
-  const loadData = React.useCallback(() => {
-    const allClaims = JSON.parse(localStorage.getItem('lh_claims') || '[]');
-    setClaims(allClaims);
+  const loadData = React.useCallback(async () => {
+    try {
+      const allClaims = await getAllClaims();
+      setClaims(allClaims);
     
     // Metrics should be calculated before applying the status filter to show global distribution in the sidebar
     let contextFiltered = [...allClaims];
@@ -76,7 +78,7 @@ export default function AdminDashboardPage() {
     if (timeFilter !== 'all') {
        const now = new Date();
        contextFiltered = contextFiltered.filter((c) => {
-          const claimDate = new Date(c.date);
+          const claimDate = c.date?.toDate ? c.date.toDate() : new Date(c.date);
           if (timeFilter === 'today') return claimDate.toDateString() === now.toDateString();
           if (timeFilter === 'week') return claimDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           if (timeFilter === 'month') return claimDate.getMonth() === now.getMonth() && claimDate.getFullYear() === now.getFullYear();
@@ -120,10 +122,15 @@ export default function AdminDashboardPage() {
       if (statusA !== statusB) return statusA - statusB;
 
       // 3. Within same status group, oldest first (ascending date)
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
+      const timeA = a.date?.toMillis ? a.date.toMillis() : new Date(a.date).getTime();
+      const timeB = b.date?.toMillis ? b.date.toMillis() : new Date(b.date).getTime();
+      return timeA - timeB;
     });
 
     setFilteredClaims(filtered);
+    } catch (e) {
+      console.error("Error loading admin claims:", e);
+    }
   }, [statusFilter, categoryFilter, roleFilter, timeFilter]);
 
   // IMPORTANT: This useEffect must be BEFORE the conditional return to comply with React Rules of Hooks
@@ -186,71 +193,65 @@ export default function AdminDashboardPage() {
 
   if (!isClient) return null;
 
-  const handleTogglePriority = (claimId: string, e: any) => {
+  const handleTogglePriority = async (claimId: string, e: any) => {
     e.stopPropagation();
-    // Read fresh data from localStorage to avoid stale state
-    const freshClaims: any[] = JSON.parse(localStorage.getItem('lh_claims') || '[]');
-    const updated = freshClaims.map((c: any) => c.id === claimId ? { ...c, priority: !c.priority } : c);
-    localStorage.setItem('lh_claims', JSON.stringify(updated));
-    loadData();
-    if (selectedClaim?.id === claimId) {
-      setSelectedClaim(updated.find((c: any) => c.id === claimId));
+    try {
+      const claim = claims.find(c => c.id === claimId);
+      if (!claim) return;
+      
+      await toggleClaimPriority(claimId, !claim.priority);
+      await loadData();
+      
+      if (selectedClaim?.id === claimId) {
+        setSelectedClaim({ ...claim, priority: !claim.priority });
+      }
+    } catch (e) {
+      console.error("Error toggling priority:", e);
     }
   };
 
-  const handleStatusChange = (claimId: string, newStatus: string, reason?: string) => {
+  const handleStatusChange = async (claimId: string, newStatus: string, reason?: string) => {
     if (!claimId) return;
 
-    // CRITICAL: Read fresh data from localStorage to avoid stale state bugs
-    const freshClaims: any[] = JSON.parse(localStorage.getItem('lh_claims') || '[]');
-    const claimIndex = freshClaims.findIndex((c: any) => c.id === claimId);
-    
-    if (claimIndex === -1) {
-      console.error('Claim not found:', claimId);
-      return;
+    try {
+      const targetClaim = claims.find(c => c.id === claimId);
+      if (!targetClaim) return;
+
+      // Send ONE notification message for THIS specific claim only
+      let statusTitle = 'Actualización de Reclamo';
+      let statusBody = `Novedades sobre su reclamo: el estado ha cambiado a ${newStatus === 'IN_PROGRESS' ? 'EN PROCESO' : newStatus === 'RESOLVED' ? 'RESUELTO' : 'RECHAZADO'}.`;
+      
+      if (newStatus === 'REJECTED') {
+        statusTitle = 'Reclamo No Corresponde';
+        statusBody = `Su reclamo ha sido rechazado. Motivo: ${reason || 'Información insuficiente o no encuadra en servicios municipales.'}`;
+      }
+
+      await createMessage({
+        user_phone: targetClaim.user_phone,
+        from: 'Gestión Municipal',
+        title: statusTitle,
+        body: statusBody,
+        type: newStatus === 'REJECTED' ? 'alert' : 'update',
+        read: false,
+        claim_id: targetClaim.id,
+        date: new Date()
+      });
+
+      // Update ONLY this specific claim in Firestore
+      await updateClaimStatus(claimId, newStatus, observation, reason);
+
+      // Clear ALL related UI state
+      setObservation('');
+      setRejectionReason('');
+      setShowRejection(false);
+      setSelectedClaim(null);
+
+      // Refresh data
+      await loadData();
+    } catch (e) {
+      console.error("Error changing status:", e);
+      alert("Hubo un error al actualizar el reclamo.");
     }
-
-    const targetClaim = freshClaims[claimIndex];
-
-    // Send ONE notification message for THIS specific claim only
-    const messages = JSON.parse(localStorage.getItem('lh_messages') || '[]');
-    const now = new Date();
-    
-    let statusTitle = 'Actualización de Reclamo';
-    let statusBody = `Novedades sobre su reclamo #${targetClaim.id}: el estado ha cambiado a ${newStatus === 'IN_PROGRESS' ? 'EN PROCESO' : newStatus === 'RESOLVED' ? 'RESUELTO' : 'RECHAZADO'}.`;
-    
-    if (newStatus === 'REJECTED') {
-      statusTitle = 'Reclamo No Corresponde';
-      statusBody = `Su reclamo #${targetClaim.id} ha sido rechazado. Motivo: ${reason || 'Información insuficiente o no encuadra en servicios municipales.'}`;
-    }
-
-    const newMessage = {
-      id: Date.now(),
-      from: 'Gestión Municipal',
-      title: statusTitle,
-      body: statusBody,
-      date: now.toISOString(),
-      type: newStatus === 'REJECTED' ? 'alert' : 'update',
-      read: false
-    };
-    localStorage.setItem('lh_messages', JSON.stringify([newMessage, ...messages]));
-
-    // Update ONLY this specific claim in the array
-    freshClaims[claimIndex] = { 
-      ...targetClaim, 
-      status: newStatus, 
-      last_observation: observation,
-      rejection_reason: newStatus === 'REJECTED' ? reason : undefined
-    };
-
-    localStorage.setItem('lh_claims', JSON.stringify(freshClaims));
-
-    // Clear ALL related UI state
-    setObservation('');
-    setRejectionReason('');
-    setShowRejection(false);
-    setSelectedClaim(null);
-    loadData();
   };
 
   const handleSelectClaim = (claim: any) => {
@@ -404,8 +405,8 @@ export default function AdminDashboardPage() {
                           <div className={`w-3 h-3 rounded-full shadow-lg ${claim.status === 'RESOLVED' ? 'bg-[#2ECC71]' : claim.status === 'IN_PROGRESS' ? 'bg-[#F1C40F]' : claim.status === 'REJECTED' ? 'bg-white/40' : 'bg-[#E74C3C]'}`} />
                           <span className="text-[11px] font-black text-white">
                              {(() => {
-                               const d = new Date(claim.date);
-                               if (isNaN(d.getTime())) return claim.date;
+                               const d = claim.date?.toDate ? claim.date.toDate() : new Date(claim.date);
+                               if (isNaN(d.getTime())) return typeof claim.date === 'string' ? claim.date : '—';
                                return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear().toString().slice(-2)} - ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
                              })()}
                           </span>
