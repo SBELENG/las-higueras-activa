@@ -2,7 +2,7 @@ import { db, storage } from './firebase';
 import { 
   collection, 
   doc, 
-  addDoc, 
+  setDoc,
   updateDoc, 
   getDoc, 
   getDocs, 
@@ -10,7 +10,8 @@ import {
   where, 
   orderBy, 
   serverTimestamp,
-  onSnapshot
+  onSnapshot,
+  runTransaction
 } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
@@ -33,7 +34,7 @@ export interface Claim {
 
 export interface Message {
   id?: string;
-  user_phone: string; // The user this message belongs to
+  user_phone: string;
   from: string;
   title: string;
   body: string;
@@ -67,7 +68,22 @@ export async function createClaim(claimData: Omit<Claim, 'photo'> & { photoBase6
       photoUrl = await getDownloadURL(storageRef);
     }
 
-    // 2. Save claim document to Firestore
+    // 2. Generate auto-incrementing sequential ID (1, 2, 3...)
+    const newIdStr = await runTransaction(db, async (transaction) => {
+      const counterRef = doc(db, 'metadata', 'counters');
+      const counterDoc = await transaction.get(counterRef);
+      
+      let nextId = 1;
+      if (counterDoc.exists()) {
+        nextId = (counterDoc.data().claim_count || 0) + 1;
+        transaction.update(counterRef, { claim_count: nextId });
+      } else {
+        transaction.set(counterRef, { claim_count: 1 });
+      }
+      return nextId.toString(); // e.g., "1", "15"
+    });
+
+    // 3. Save claim document to Firestore using the numeric ID
     const newClaim = {
       ...claimData,
       photo: photoUrl,
@@ -79,8 +95,8 @@ export async function createClaim(claimData: Omit<Claim, 'photo'> & { photoBase6
     // Remove the base64 prop before saving
     delete (newClaim as any).photoBase64;
 
-    const docRef = await addDoc(collection(db, 'claims'), newClaim);
-    return docRef.id;
+    await setDoc(doc(db, 'claims', newIdStr), newClaim);
+    return newIdStr;
   } catch (error) {
     console.error("Error creating claim:", error);
     throw error;

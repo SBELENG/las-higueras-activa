@@ -331,6 +331,20 @@ export default function NuevoReclamoPage() {
                     className="w-full bg-white/5 border border-white/20 rounded-2xl px-6 py-5 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
                     value={claimAddress}
                     onChange={(e) => { setClaimAddress(e.target.value); if (usingGeoLocation && e.target.value) setUsingGeoLocation(false); }}
+                    onBlur={() => {
+                      if (claimAddress && !usingGeoLocation && typeof google !== 'undefined' && google.maps) {
+                        const geocoder = new google.maps.Geocoder();
+                        const searchAddress = claimAddress.toLowerCase().includes('las higueras') ? claimAddress : `${claimAddress}, Las Higueras, Córdoba`;
+                        geocoder.geocode({ address: searchAddress }, (results: any, status: any) => {
+                          if (status === 'OK' && results?.[0]) {
+                            const lat = results[0].geometry.location.lat();
+                            const lng = results[0].geometry.location.lng();
+                            setClaimLocation({ lat, lng });
+                            setMarkerMoved(true);
+                          }
+                        });
+                      }
+                    }}
                   />
                   {!claimAddress && (
                     <p className="text-white/60 text-xs italic ml-1 mt-1">Si no conocés la dirección, usá el botón de ubicación actual más abajo.</p>
