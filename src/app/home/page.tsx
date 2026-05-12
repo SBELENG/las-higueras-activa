@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/GlassCard';
 import GlassHeader from '@/components/GlassHeader';
-import { listenUnreadMessages } from '@/lib/db';
+import { listenUnreadMessages, saveFcmToken } from '@/lib/db';
+import { requestNotificationToken } from '@/lib/firebase';
 
 export default function HomePage() {
   const router = useRouter();
@@ -21,11 +22,20 @@ export default function HomePage() {
       const userStr = localStorage.getItem('lh_activa_user');
       if (userStr) {
         const user = JSON.parse(userStr);
-        // Start listening to unread messages in real-time
+        // 1. Start listening to unread messages in real-time
         const unsubscribe = listenUnreadMessages(user.phone, (count) => {
           setUnreadMessages(count);
         });
         
+        // 2. Request Push Notification Token
+        const setupNotifications = async () => {
+          const token = await requestNotificationToken();
+          if (token) {
+            await saveFcmToken(user.phone, token);
+          }
+        };
+        setupNotifications();
+
         // Cleanup listener on unmount
         return () => unsubscribe();
       }

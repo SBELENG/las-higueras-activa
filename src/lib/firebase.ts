@@ -5,6 +5,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -21,8 +22,39 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// Messaging instance (only on client)
+let messaging: any = null;
+if (typeof window !== 'undefined') {
+  try {
+    messaging = getMessaging(app);
+  } catch (e) {
+    console.error('Firebase Messaging failed to initialize:', e);
+  }
+}
+
 // Set language to Spanish
 auth.languageCode = 'es';
+
+/**
+ * Request permission for notifications and return FCM token
+ */
+export async function requestNotificationToken(): Promise<string | null> {
+  if (!messaging) return null;
+  
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const token = await getToken(messaging, {
+        vapidKey: 'BAZG0Wpq9iRY41lhqRVZyXdv-nJPOXXJFhrY1dyWmNxfkILGTYCthuXyP_IrAth_h3kKloqwlW-OpGHQW2rk4iQ'
+      });
+      return token;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting notification token:', error);
+    return null;
+  }
+}
 
 // Extend Window interface for our custom properties
 declare global {
@@ -97,4 +129,4 @@ export async function verifyCode(code: string) {
   return result.user;
 }
 
-export { auth, app, db, storage };
+export { auth, app, db, storage, messaging, onMessage };

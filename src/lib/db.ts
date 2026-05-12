@@ -218,3 +218,19 @@ export function listenUnreadMessages(phone: string, callback: (count: number) =>
     callback(snapshot.docs.length);
   });
 }
+
+/**
+ * Save or update FCM token for a user
+ */
+export async function saveFcmToken(phone: string, token: string) {
+  const q = query(collection(db, 'users'), where('phone', '==', phone));
+  const querySnapshot = await getDocs(q);
+  
+  if (!querySnapshot.empty) {
+    const userDoc = querySnapshot.docs[0];
+    await updateDoc(doc(db, 'users', userDoc.id), {
+      fcmToken: token,
+      lastTokenUpdate: serverTimestamp()
+    });
+  }
+}
