@@ -6,7 +6,6 @@ export const metadata: Metadata = {
   title: 'Las Higueras Activa — Gestión de Reclamos',
   description:
     'Plataforma municipal de reclamos vecinales. Hacé tu reclamo de forma rápida y seguí su estado en tiempo real. Las Higueras, Córdoba.',
-  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -31,6 +30,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="apple-touch-icon" href="/assets/logo.svg" />
+        
+        {/* Dynamic Manifest Switcher Component */}
+        <ManifestSwitcher />
       </head>
       <body>
         <div className="app-background-image" />
@@ -40,5 +42,26 @@ export default function RootLayout({
         </div>
       </body>
     </html>
+  );
+}
+
+// Client component to switch manifest based on URL
+function ManifestSwitcher() {
+  return (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `
+          (function() {
+            var manifest = window.location.pathname.startsWith('/admin') 
+              ? '/manifest-admin.json' 
+              : '/manifest.json';
+            var link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifest;
+            document.head.appendChild(link);
+          })();
+        `,
+      }}
+    />
   );
 }
