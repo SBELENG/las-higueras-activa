@@ -220,7 +220,8 @@ export function listenUnreadMessages(phone: string, callback: (count: number) =>
 }
 
 /**
- * Save or update FCM token for a user
+ * Save or update FCM token for a user.
+ * If user doesn't exist in Firestore, it's created.
  */
 export async function saveFcmToken(phone: string, token: string) {
   const q = query(collection(db, 'users'), where('phone', '==', phone));
@@ -231,6 +232,35 @@ export async function saveFcmToken(phone: string, token: string) {
     await updateDoc(doc(db, 'users', userDoc.id), {
       fcmToken: token,
       lastTokenUpdate: serverTimestamp()
+    });
+  } else {
+    // If user somehow doesn't exist yet, create a placeholder with the token
+    await addDoc(collection(db, 'users'), {
+      phone,
+      fcmToken: token,
+      lastTokenUpdate: serverTimestamp(),
+      createdAt: serverTimestamp()
+    });
+  }
+}
+
+/**
+ * Save or update user profile in Firestore
+ */
+export async function saveUserProfile(userData: { name: string, phone: string, role: string }) {
+  const q = query(collection(db, 'users'), where('phone', '==', userData.phone));
+  const querySnapshot = await getDocs(q);
+  
+  if (!querySnapshot.empty) {
+    const userDoc = querySnapshot.docs[0];
+    await updateDoc(doc(db, 'users', userDoc.id), {
+      ...userData,
+      updatedAt: serverTimestamp()
+    });
+  } else {
+    await addDoc(collection(db, 'users'), {
+      ...userData,
+      createdAt: serverTimestamp()
     });
   }
 }

@@ -29,9 +29,19 @@ export default function HomePage() {
         
         // 2. Request Push Notification Token
         const setupNotifications = async () => {
-          const token = await requestNotificationToken();
-          if (token) {
-            await saveFcmToken(user.phone, token);
+          try {
+            // Register service worker explicitly for Firebase Messaging
+            if ('serviceWorker' in navigator) {
+              const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+              console.log('Service Worker registrado con éxito:', registration.scope);
+              
+              const token = await requestNotificationToken();
+              if (token) {
+                await saveFcmToken(user.phone, token);
+              }
+            }
+          } catch (error) {
+            console.error('Error setting up notifications:', error);
           }
         };
         setupNotifications();

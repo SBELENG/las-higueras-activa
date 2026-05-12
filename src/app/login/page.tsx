@@ -6,6 +6,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { setupRecaptcha, sendVerificationCode, verifyCode } from '@/lib/firebase';
+import { saveUserProfile } from '@/lib/db';
 
 const USER_ROLES = [
   { id: 'vecino', label: 'Vecino común', icon: '🏠' },
@@ -244,19 +245,29 @@ export default function LoginPage() {
     }
   };
 
-  const handleFinishProfile = (e?: React.FormEvent) => {
+  const handleFinishProfile = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!name || !role || !acceptedTerms) return;
 
-    // Save profile and log in
-    localStorage.setItem('lh_activa_user', JSON.stringify({ 
-      name, 
-      phone, 
-      role 
-    }));
-    const params = new URLSearchParams(window.location.search);
-    const redirectTo = params.get('redirect') || '/home';
-    router.push(redirectTo);
+    setLoading(true);
+    try {
+      const userData = { name, phone: formatPhoneNumber(phone), role };
+      
+      // Save profile to Firestore first to enable notifications
+      await saveUserProfile(userData);
+
+      // Save profile and log in
+      localStorage.setItem('lh_activa_user', JSON.stringify(userData));
+      
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get('redirect') || '/home';
+      router.push(redirectTo);
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      setErrorMessage('Error al guardar el perfil. Intentá de nuevo.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
