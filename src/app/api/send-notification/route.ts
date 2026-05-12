@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminMessaging, adminDb } from '@/lib/firebase-admin';
+
+// Force dynamic to prevent Next.js from trying to pre-render this route at build time
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    // Lazy-load firebase-admin to avoid build-time initialization
+    const { adminMessaging, adminDb } = await import('@/lib/firebase-admin');
+
     const body = await request.json();
     const { userPhone, title, body: messageBody } = body;
 

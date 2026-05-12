@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
     "@react-google-maps/api": "^2.20.8",
     "firebase": "^12.12.1",
     "firebase-admin": "^13.9.0",
