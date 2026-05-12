@@ -6,7 +6,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamicMap from 'next/dynamic';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { getAllClaims, updateClaimStatus, toggleClaimPriority, createMessage, Claim } from '@/lib/db';
+import { updateClaimStatus, toggleClaimPriority, createMessage, Claim } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 
 const InteractiveMap = dynamicMap(() => import('../../components/InteractiveMap'), { 
   ssr: false,
@@ -66,13 +68,61 @@ export default function AdminDashboardPage() {
     }
   }, []);
 
-  const loadData = React.useCallback(async () => {
+
+  const playNotifSound = React.useCallback(() => {
     try {
-      const allClaims = await getAllClaims();
+      const ctx = audioCtxRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioCtxRef.current = ctx;
+      const t = ctx.currentTime;
+      const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
+      o1.connect(g1); g1.connect(ctx.destination);
+      o1.frequency.setValueAtTime(523, t); o1.frequency.setValueAtTime(659, t + 0.15);
+      g1.gain.setValueAtTime(0.3, t); g1.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+      o1.start(t); o1.stop(t + 0.4);
+      const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+      o2.connect(g2); g2.connect(ctx.destination);
+      o2.frequency.setValueAtTime(784, t + 0.2);
+      g2.gain.setValueAtTime(0, t); g2.gain.setValueAtTime(0.3, t + 0.2);
+      g2.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
+      o2.start(t + 0.2); o2.stop(t + 0.6);
+    } catch (e) { console.warn('Sound error:', e); }
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
+    // Real-time listener for all claims
+    const q = query(collection(db, 'claims'), orderBy('date', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const allClaims = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as any[];
+
       setClaims(allClaims);
-    
-    // Metrics should be calculated before applying the status filter to show global distribution in the sidebar
-    let contextFiltered = [...allClaims];
+
+      // Notify if new claims arrived
+      const count = allClaims.length;
+      if (prevCountRef.current !== -1 && count > prevCountRef.current) {
+        const diff = count - prevCountRef.current;
+        playNotifSound();
+        setNewClaimAlert({ 
+          show: true, 
+          message: `🚨 ${diff} nuevo${diff > 1 ? 's' : ''} reclamo${diff > 1 ? 's' : ''} recibido${diff > 1 ? 's' : ''}` 
+        });
+        setTimeout(() => setNewClaimAlert({show: false, message: ''}), 8000);
+      }
+      prevCountRef.current = count;
+    }, (error) => {
+      console.error("Error listening to claims:", error);
+    });
+
+    return () => unsubscribe();
+  }, [isClient, playNotifSound]);
+
+  // Update filtered claims and metrics when claims or filters change
+  useEffect(() => {
+    let contextFiltered = [...claims];
     if (categoryFilter !== 'all') contextFiltered = contextFiltered.filter((c) => c.category === categoryFilter);
     if (roleFilter !== 'all') contextFiltered = contextFiltered.filter((c) => c.user_role === roleFilter);
     if (timeFilter !== 'all') {
@@ -96,14 +146,11 @@ export default function AdminDashboardPage() {
       priorities: contextFiltered.filter((c: any) => c.priority).length
     });
 
-    // Now apply status filter for the actual list
     let filtered = [...contextFiltered];
     if (statusFilter !== 'all') {
       filtered = filtered.filter((c) => c.status === statusFilter);
     }
     
-    // Sort order: Priority (purple) → Pending → In Progress → Resolved → Rejected
-    // Within each group: oldest first (so old claims stay visible)
     const statusOrder: Record<string, number> = {
       'PENDING': 1,
       'IN_PROGRESS': 2,
@@ -112,71 +159,18 @@ export default function AdminDashboardPage() {
     };
 
     filtered.sort((a, b) => {
-      // 1. Priority items always come first
       if (a.priority && !b.priority) return -1;
       if (!a.priority && b.priority) return 1;
-
-      // 2. Within same priority tier, sort by status group
       const statusA = statusOrder[a.status] || 99;
       const statusB = statusOrder[b.status] || 99;
       if (statusA !== statusB) return statusA - statusB;
-
-      // 3. Within same status group, oldest first (ascending date)
       const timeA = a.date?.toMillis ? a.date.toMillis() : new Date(a.date).getTime();
       const timeB = b.date?.toMillis ? b.date.toMillis() : new Date(b.date).getTime();
       return timeA - timeB;
     });
 
     setFilteredClaims(filtered);
-    } catch (e) {
-      console.error("Error loading admin claims:", e);
-    }
-  }, [statusFilter, categoryFilter, roleFilter, timeFilter]);
-
-  // IMPORTANT: This useEffect must be BEFORE the conditional return to comply with React Rules of Hooks
-  useEffect(() => {
-    if (!isClient) return;
-    loadData();
-  }, [isClient, loadData]);
-
-  const playNotifSound = React.useCallback(() => {
-    try {
-      const ctx = audioCtxRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
-      audioCtxRef.current = ctx;
-      const t = ctx.currentTime;
-      const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
-      o1.connect(g1); g1.connect(ctx.destination);
-      o1.frequency.setValueAtTime(523, t); o1.frequency.setValueAtTime(659, t + 0.15);
-      g1.gain.setValueAtTime(0.3, t); g1.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
-      o1.start(t); o1.stop(t + 0.4);
-      const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
-      o2.connect(g2); g2.connect(ctx.destination);
-      o2.frequency.setValueAtTime(784, t + 0.2);
-      g2.gain.setValueAtTime(0, t); g2.gain.setValueAtTime(0.3, t + 0.2);
-      g2.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
-      o2.start(t + 0.2); o2.stop(t + 0.6);
-    } catch (e) { console.warn('Sound error:', e); }
-  }, []);
-
-  // Poll for new claims every 5 seconds
-  useEffect(() => {
-    if (!isClient) return;
-    const check = () => {
-      const all = JSON.parse(localStorage.getItem('lh_claims') || '[]');
-      const count = all.length;
-      if (prevCountRef.current === -1) { prevCountRef.current = count; return; }
-      if (count > prevCountRef.current) {
-        const diff = count - prevCountRef.current;
-        prevCountRef.current = count;
-        playNotifSound();
-        setNewClaimAlert({ show: true, message: `🚨 ${diff} nuevo${diff > 1 ? 's' : ''} reclamo${diff > 1 ? 's' : ''} recibido${diff > 1 ? 's' : ''}` });
-        loadData();
-        setTimeout(() => setNewClaimAlert({show: false, message: ''}), 8000);
-      }
-    };
-    const id = setInterval(check, 5000);
-    return () => clearInterval(id);
-  }, [isClient, loadData, playNotifSound]);
+  }, [claims, statusFilter, categoryFilter, roleFilter, timeFilter]);
 
   // IMPORTANT: getMarkerIcon must also be BEFORE the conditional return (Rules of Hooks)
   const getMarkerIcon = React.useCallback((status: string) => {
@@ -200,7 +194,6 @@ export default function AdminDashboardPage() {
       if (!claim) return;
       
       await toggleClaimPriority(claimId, !claim.priority);
-      await loadData();
       
       if (selectedClaim?.id === claimId) {
         setSelectedClaim({ ...claim, priority: !claim.priority });
@@ -245,9 +238,6 @@ export default function AdminDashboardPage() {
       setRejectionReason('');
       setShowRejection(false);
       setSelectedClaim(null);
-
-      // Refresh data
-      await loadData();
     } catch (e) {
       console.error("Error changing status:", e);
       alert("Hubo un error al actualizar el reclamo.");
@@ -278,7 +268,7 @@ export default function AdminDashboardPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] bg-[#E74C3C] text-white px-8 py-4 rounded-2xl shadow-2xl shadow-red-500/30 border border-red-400/30 flex items-center gap-3 backdrop-blur-xl cursor-pointer"
-            onClick={() => { setNewClaimAlert({show: false, message: ''}); loadData(); }}
+            onClick={() => { setNewClaimAlert({show: false, message: ''}); }}
           >
             <span className="text-2xl animate-bounce">🔔</span>
             <span className="font-black text-sm tracking-wide">{newClaimAlert.message}</span>
@@ -633,10 +623,24 @@ export default function AdminDashboardPage() {
                 </div>
               </ErrorBoundary>
 
-              <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 text-white/60 text-[10px] font-bold flex gap-4 z-10">
-                 <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#E74C3C]"></span> PENDIENTE</span>
-                 <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#F1C40F]"></span> EN PROCESO</span>
-                 <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#2ECC71]"></span> RESUELTO</span>
+              <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end z-10 pointer-events-none">
+                <div className="bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 text-white/60 text-[10px] font-bold flex gap-4 pointer-events-auto">
+                   <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#E74C3C]"></span> PENDIENTE</span>
+                   <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#F1C40F]"></span> EN PROCESO</span>
+                   <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#2ECC71]"></span> RESUELTO</span>
+                </div>
+                
+                <button 
+                  onClick={() => {
+                    setMapCenter(INITIAL_CENTER);
+                    setMapZoom(14);
+                    setSelectedClaim(null);
+                  }}
+                  className="bg-[#2ECC71] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-green-500/20 border border-green-400/30 flex items-center gap-2 pointer-events-auto hover:bg-[#27AE60] transition-all"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                  Recentrar Mapa
+                </button>
               </div>
             </div>
           </section>

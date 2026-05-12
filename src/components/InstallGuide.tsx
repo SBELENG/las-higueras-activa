@@ -62,7 +62,7 @@ export default function InstallGuide() {
                 {platform === 'ios' ? (
                   <>Para recibir alertas de tus reclamos: Tocá el botón <span className="inline-block bg-white/10 px-1.5 py-0.5 rounded mx-0.5">⎋</span> (Compartir) y luego <span className="text-white font-semibold">"Agregar a inicio"</span>.</>
                 ) : (
-                  <>Para recibir alertas de tus reclamos en tiempo real: Tocá los <span className="text-white font-semibold">"tres puntos"</span> del navegador y elegí <span className="text-white font-semibold">"Instalar aplicación"</span>.</>
+                  <>Para recibir alertas de tus reclamos en tiempo real: Tocá los <span className="text-white font-semibold">"tres puntos"</span> del navegador y elegí <span className="text-white font-semibold">"agregar aplicación a pantalla principal"</span>.</>
                 )}
               </p>
             </div>

@@ -51,6 +51,7 @@ export default function NuevoReclamoPage() {
   const [usingGeoLocation, setUsingGeoLocation] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
   const [markerMoved, setMarkerMoved] = useState(false);
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   // Two separate references: one for direct camera, one for gallery
   const photoInputRef = React.useRef<HTMLInputElement>(null);
@@ -333,9 +334,11 @@ export default function NuevoReclamoPage() {
                     onChange={(e) => { setClaimAddress(e.target.value); if (usingGeoLocation && e.target.value) setUsingGeoLocation(false); }}
                     onBlur={() => {
                       if (claimAddress && !usingGeoLocation && typeof google !== 'undefined' && google.maps) {
+                        setIsGeocoding(true);
                         const geocoder = new google.maps.Geocoder();
                         const searchAddress = claimAddress.toLowerCase().includes('las higueras') ? claimAddress : `${claimAddress}, Las Higueras, Córdoba`;
                         geocoder.geocode({ address: searchAddress }, (results: any, status: any) => {
+                          setIsGeocoding(false);
                           if (status === 'OK' && results?.[0]) {
                             const lat = results[0].geometry.location.lat();
                             const lng = results[0].geometry.location.lng();
@@ -468,10 +471,10 @@ export default function NuevoReclamoPage() {
                 <div className="pb-8">
                   <button
                     onClick={handleSubmit}
-                    disabled={(!claimAddress && !usingGeoLocation && !markerMoved) || loading}
+                    disabled={(!claimAddress && !usingGeoLocation && !markerMoved) || loading || isGeocoding}
                     className="w-full bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-black py-5 px-8 rounded-2xl shadow-[0_8px_30px_-8px_rgba(46,204,113,0.5)] transition-all transform active:scale-95 text-base tracking-wide"
                   >
-                    {loading ? 'Enviando Reclamo...' : '✅ Confirmar y Enviar'}
+                    {loading ? 'Enviando Reclamo...' : isGeocoding ? 'Buscando Dirección...' : '✅ Confirmar y Enviar'}
                   </button>
                   {!claimAddress && !usingGeoLocation && !markerMoved && (
                     <p className="text-white/50 text-xs text-center mt-3 italic">Ingresá una dirección, usá tu ubicación o mové el marcador en el mapa</p>
