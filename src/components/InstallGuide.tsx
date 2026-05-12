@@ -2,12 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 export default function InstallGuide() {
+  const pathname = usePathname();
   const [showGuide, setShowGuide] = useState(false);
   const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>('other');
 
   useEffect(() => {
+    // Only show on landing page ('/')
+    if (pathname !== '/') return;
+
+    // Check if dismissed before
+    const isDismissed = localStorage.getItem('lh_install_guide_dismissed');
+    if (isDismissed) return;
+
     // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
       || (window.navigator as any).standalone 
@@ -29,7 +38,12 @@ export default function InstallGuide() {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [pathname]);
+
+  const handleDismiss = () => {
+    setShowGuide(false);
+    localStorage.setItem('lh_install_guide_dismissed', 'true');
+  };
 
   if (!showGuide || platform === 'other') return null;
 
@@ -46,7 +60,7 @@ export default function InstallGuide() {
           <div className="absolute -top-10 -left-10 w-24 h-24 bg-[#2ECC71]/20 blur-3xl rounded-full"></div>
           
           <button 
-            onClick={() => setShowGuide(false)}
+            onClick={handleDismiss}
             className="absolute top-3 right-3 text-white/40 hover:text-white transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
