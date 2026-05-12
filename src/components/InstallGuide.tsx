@@ -8,10 +8,12 @@ export default function InstallGuide() {
   const pathname = usePathname();
   const [showGuide, setShowGuide] = useState(false);
   const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>('other');
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
-    // Only show on landing page ('/')
-    if (pathname !== '/') return;
+    // Show only on landing page or admin panel
+    const allowedPaths = ['/', '/admin'];
+    if (!allowedPaths.includes(pathname)) return;
 
     // Check if dismissed before
     const isDismissed = localStorage.getItem('lh_install_guide_dismissed');
@@ -32,13 +34,37 @@ export default function InstallGuide() {
     if (isIos) setPlatform('ios');
     else if (isAndroid) setPlatform('android');
 
-    // Show guide after 3 seconds
-    const timer = setTimeout(() => {
+    // Handle Native Install Prompt (Android/Chrome)
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // If we have the native prompt, show the guide immediately (as it's more interactive)
       setShowGuide(true);
-    }, 3000);
+    };
 
-    return () => clearTimeout(timer);
-  }, [pathname]);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // If not native, show manual guide after 4 seconds
+    const timer = setTimeout(() => {
+      if (!deferredPrompt) setShowGuide(true);
+    }, 4000);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(timer);
+    };
+  }, [pathname, deferredPrompt]);
+
+  const handleNativeInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      localStorage.setItem('lh_install_guide_dismissed', 'true');
+    }
+    setDeferredPrompt(null);
+    setShowGuide(false);
+  };
 
   const handleDismiss = () => {
     setShowGuide(false);
@@ -70,15 +96,28 @@ export default function InstallGuide() {
             <div className="w-12 h-12 bg-gradient-to-br from-[#2ECC71] to-[#27AE60] rounded-2xl flex items-center justify-center text-2xl shadow-lg shrink-0">
               📲
             </div>
-            <div className="space-y-1">
-              <h3 className="text-white font-bold text-sm">Instalá la App Oficial</h3>
-              <p className="text-white/60 text-xs leading-relaxed">
-                {platform === 'ios' ? (
-                  <>Para recibir alertas de tus reclamos: Tocá el botón <span className="inline-block bg-white/10 px-1.5 py-0.5 rounded mx-0.5">⎋</span> (Compartir) y luego <span className="text-white font-semibold">"Agregar a inicio"</span>.</>
-                ) : (
-                  <>Para recibir alertas de tus reclamos en tiempo real: Tocá los <span className="text-white font-semibold">"tres puntos"</span> del navegador y elegí <span className="text-white font-semibold">"agregar aplicación a pantalla principal"</span>.</>
-                )}
-              </p>
+            <div className="space-y-3 flex-1">
+              <div>
+                <h3 className="text-white font-bold text-sm">Instalá Las Higueras Activa</h3>
+                <p className="text-white/60 text-xs leading-relaxed mt-1">
+                  {deferredPrompt ? (
+                    'Descargá la aplicación oficial para una mejor experiencia y notificaciones.'
+                  ) : platform === 'ios' ? (
+                    <>Tocá el botón <span className="inline-block bg-white/10 px-1.5 py-0.5 rounded mx-0.5">⎋</span> (Compartir) y luego <span className="text-white font-semibold">"Agregar a inicio"</span>.</>
+                  ) : (
+                    <>Tocá los <span className="text-white font-semibold">"tres puntos"</span> del navegador y elegí <span className="text-white font-semibold">"agregar aplicación a pantalla principal"</span>.</>
+                  )}
+                </p>
+              </div>
+
+              {deferredPrompt && (
+                <button
+                  onClick={handleNativeInstall}
+                  className="w-full bg-[#2ECC71] hover:bg-[#27AE60] text-white text-[10px] font-black uppercase tracking-widest py-3 rounded-xl transition-all shadow-lg shadow-green-500/20"
+                >
+                  Instalar Ahora
+                </button>
+              )}
             </div>
           </div>
         </div>
