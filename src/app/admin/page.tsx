@@ -219,6 +219,7 @@ export default function AdminDashboardPage() {
         statusBody = `Su reclamo ha sido rechazado. Motivo: ${reason || 'Información insuficiente o no encuadra en servicios municipales.'}`;
       }
 
+      // 1. Save message in Firestore (for in-app messages section)
       await createMessage({
         user_phone: targetClaim.user_phone,
         from: 'Gestión Municipal',
@@ -230,7 +231,22 @@ export default function AdminDashboardPage() {
         date: new Date()
       });
 
-      // Update ONLY this specific claim in Firestore
+      // 2. Send REAL push notification to the citizen's device
+      try {
+        await fetch('/api/send-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userPhone: targetClaim.user_phone,
+            title: statusTitle,
+            body: statusBody,
+          }),
+        });
+      } catch (pushError) {
+        console.warn('Push notification failed (non-blocking):', pushError);
+      }
+
+      // 3. Update ONLY this specific claim in Firestore
       await updateClaimStatus(claimId, newStatus, observation, reason);
 
       // Clear ALL related UI state
