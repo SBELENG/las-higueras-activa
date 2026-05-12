@@ -623,24 +623,12 @@ export default function AdminDashboardPage() {
                 </div>
               </ErrorBoundary>
 
-              <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end z-10 pointer-events-none">
+              <div className="absolute bottom-4 left-4 flex justify-between items-end z-10 pointer-events-none">
                 <div className="bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 text-white/60 text-[10px] font-bold flex gap-4 pointer-events-auto">
                    <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#E74C3C]"></span> PENDIENTE</span>
                    <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#F1C40F]"></span> EN PROCESO</span>
                    <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#2ECC71]"></span> RESUELTO</span>
                 </div>
-                
-                <button 
-                  onClick={() => {
-                    setMapCenter(INITIAL_CENTER);
-                    setMapZoom(14);
-                    setSelectedClaim(null);
-                  }}
-                  className="bg-[#2ECC71] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-green-500/20 border border-green-400/30 flex items-center gap-2 pointer-events-auto hover:bg-[#27AE60] transition-all"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-                  Recentrar Mapa
-                </button>
               </div>
             </div>
           </section>
