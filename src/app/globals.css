@@ -154,7 +154,6 @@ h1, h2, h3 {
 
 .splash-logo {
   margin-bottom: 2rem;
-  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
   border-radius: 20%;
 }
 
