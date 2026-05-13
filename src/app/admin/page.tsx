@@ -242,6 +242,8 @@ export default function AdminDashboardPage() {
             body: statusBody,
           }),
         });
+        const pushResult = await pushResponse.json();
+        console.log('📱 Push notification result:', pushResult);
       } catch (pushError) {
         console.warn('Push notification failed (non-blocking):', pushError);
       }

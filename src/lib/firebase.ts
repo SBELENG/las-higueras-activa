@@ -38,17 +38,32 @@ auth.languageCode = 'es';
 /**
  * Request permission for notifications and return FCM token
  */
-export async function requestNotificationToken(): Promise<string | null> {
-  if (!messaging) return null;
+export async function requestNotificationToken(swRegistration?: ServiceWorkerRegistration): Promise<string | null> {
+  if (!messaging) {
+    console.warn('Firebase Messaging not initialized');
+    return null;
+  }
   
   try {
     const permission = await Notification.requestPermission();
+    console.log('Notification permission:', permission);
+    
     if (permission === 'granted') {
-      const token = await getToken(messaging, {
-        vapidKey: 'BAZG0Wpq9iRY41lhqRVZyXdv-nJPOXXJFhrY1dyWmNxfkILGTYCthuXyP_IrAth_h3kKloqwlW-OpGHQW2rk4iQ'
-      });
+      const tokenOptions: any = {
+        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || 'BAZG0Wpq9iRY41lhqRVZyXdv-nJPOXXJFhrY1dyWmNxfkILGTYCthuXyP_IrAth_h3kKloqwlW-OpGHQW2rk4iQ'
+      };
+      
+      // Pass the service worker registration if available
+      if (swRegistration) {
+        tokenOptions.serviceWorkerRegistration = swRegistration;
+      }
+      
+      const token = await getToken(messaging, tokenOptions);
+      console.log('FCM Token obtained:', token ? token.substring(0, 20) + '...' : 'NULL');
       return token;
     }
+    
+    console.warn('Notification permission denied');
     return null;
   } catch (error) {
     console.error('Error getting notification token:', error);

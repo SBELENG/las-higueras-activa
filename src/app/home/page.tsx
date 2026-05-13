@@ -33,15 +33,23 @@ export default function HomePage() {
             // Register service worker explicitly for Firebase Messaging
             if ('serviceWorker' in navigator) {
               const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-              console.log('Service Worker registrado con éxito:', registration.scope);
+              console.log('✅ Service Worker registrado:', registration.scope);
               
-              const token = await requestNotificationToken();
+              // Pass SW registration to get a valid FCM token
+              const token = await requestNotificationToken(registration);
+              console.log('🔔 FCM Token result:', token ? 'OK (' + token.substring(0, 15) + '...)' : 'NULL');
+              
               if (token) {
                 await saveFcmToken(user.phone, token);
+                console.log('💾 Token saved for phone:', user.phone);
+              } else {
+                console.warn('⚠️ No FCM token obtained - notifications will not work');
               }
+            } else {
+              console.warn('⚠️ Service Workers not supported in this browser');
             }
           } catch (error) {
-            console.error('Error setting up notifications:', error);
+            console.error('❌ Error setting up notifications:', error);
           }
         };
         setupNotifications();
