@@ -233,7 +233,7 @@ export default function AdminDashboardPage() {
 
       // 2. Send REAL push notification to the citizen's device
       try {
-        await fetch('/api/send-notification', {
+        const pushResponse = await fetch('/api/send-notification', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
