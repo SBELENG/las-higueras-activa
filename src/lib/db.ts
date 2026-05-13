@@ -223,24 +223,30 @@ export function listenUnreadMessages(phone: string, callback: (count: number) =>
  * Save or update FCM token for a user.
  * If user doesn't exist in Firestore, it's created.
  */
-export async function saveFcmToken(phone: string, token: string) {
+export async function saveFcmToken(phone: string, token: string | null, error?: string) {
   const q = query(collection(db, 'users'), where('phone', '==', phone));
   const querySnapshot = await getDocs(q);
   
   if (!querySnapshot.empty) {
     const userDoc = querySnapshot.docs[0];
-    await updateDoc(doc(db, 'users', userDoc.id), {
-      fcmToken: token,
+    const updateData: any = {
       lastTokenUpdate: serverTimestamp()
-    });
+    };
+    if (token) updateData.fcmToken = token;
+    if (error) updateData.fcmError = error;
+    
+    await updateDoc(doc(db, 'users', userDoc.id), updateData);
   } else {
-    // If user somehow doesn't exist yet, create a placeholder with the token
-    await addDoc(collection(db, 'users'), {
+    // If user somehow doesn't exist yet, create a placeholder
+    const newData: any = {
       phone,
-      fcmToken: token,
       lastTokenUpdate: serverTimestamp(),
       createdAt: serverTimestamp()
-    });
+    };
+    if (token) newData.fcmToken = token;
+    if (error) newData.fcmError = error;
+    
+    await addDoc(collection(db, 'users'), newData);
   }
 }
 

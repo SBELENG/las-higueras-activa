@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
       id: doc.id,
       phone: doc.data().phone,
       hasFcmToken: !!doc.data().fcmToken,
+      fcmError: doc.data().fcmError || null,
       tokenPreview: doc.data().fcmToken ? doc.data().fcmToken.substring(0, 20) + '...' : 'NO TOKEN',
       name: doc.data().name || 'N/A',
     }));

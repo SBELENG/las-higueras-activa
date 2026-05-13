@@ -38,38 +38,34 @@ auth.languageCode = 'es';
 /**
  * Request permission for notifications and return FCM token
  */
-export async function requestNotificationToken(swRegistration?: ServiceWorkerRegistration): Promise<string | null> {
+export async function requestNotificationToken(swRegistration?: ServiceWorkerRegistration): Promise<{token: string | null, error?: string}> {
   if (!messaging) {
-    console.warn('Firebase Messaging not initialized');
-    return null;
+    return { token: null, error: 'Firebase Messaging not initialized (messaging is null)' };
   }
   
   try {
     const permission = await Notification.requestPermission();
-    console.log('Notification permission:', permission);
     
     if (permission === 'granted') {
       const tokenOptions: any = {
         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || 'BAZG0Wpq9iRY41IhqRVZyXdv-nJPOXXJFhrY1dyWmNxfkILGTYCthuXyP_IrAth_h3kKloqwlW-OpGHQW2rk4iQ'
       };
       
-      // Pass the service worker registration if available
       if (swRegistration) {
         tokenOptions.serviceWorkerRegistration = swRegistration;
       }
       
       const token = await getToken(messaging, tokenOptions);
-      console.log('FCM Token obtained:', token ? token.substring(0, 20) + '...' : 'NULL');
-      return token;
+      return { token: token || null, error: token ? undefined : 'getToken returned empty/null' };
     }
     
-    console.warn('Notification permission denied');
-    return null;
-  } catch (error) {
+    return { token: null, error: `Permission not granted, status: ${permission}` };
+  } catch (error: any) {
     console.error('Error getting notification token:', error);
-    return null;
+    return { token: null, error: error?.message || String(error) };
   }
 }
+
 
 // Extend Window interface for our custom properties
 declare global {

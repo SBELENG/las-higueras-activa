@@ -36,14 +36,16 @@ export default function HomePage() {
               console.log('✅ Service Worker registrado:', registration.scope);
               
               // Pass SW registration to get a valid FCM token
-              const token = await requestNotificationToken(registration);
-              console.log('🔔 FCM Token result:', token ? 'OK (' + token.substring(0, 15) + '...)' : 'NULL');
+              const result = await requestNotificationToken(registration);
+              const { token, error } = result;
               
               if (token) {
+                console.log('🔔 FCM Token result: OK (' + token.substring(0, 15) + '...)');
                 await saveFcmToken(user.phone, token);
                 console.log('💾 Token saved for phone:', user.phone);
               } else {
-                console.warn('⚠️ No FCM token obtained - notifications will not work');
+                console.warn('⚠️ No FCM token obtained:', error);
+                await saveFcmToken(user.phone, null, error);
               }
             } else {
               console.warn('⚠️ Service Workers not supported in this browser');
