@@ -50,7 +50,7 @@ export async function requestNotificationToken(swRegistration?: ServiceWorkerReg
     
     if (permission === 'granted') {
       const tokenOptions: any = {
-        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || 'BAZG0Wpq9iRY41lhqRVZyXdv-nJPOXXJFhrY1dyWmNxfkILGTYCthuXyP_IrAth_h3kKloqwlW-OpGHQW2rk4iQ'
+        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || 'BAZG0Wpq9iRY41IhqRVZyXdv-nJPOXXJFhrY1dyWmNxfkILGTYCthuXyP_IrAth_h3kKloqwlW-OpGHQW2rk4iQ'
       };
       
       // Pass the service worker registration if available
