@@ -19,8 +19,22 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Look up the user's FCM token from Firestore
+    // Normalize phone: claims may have "3584920122" but users have "+543584920122"
     const usersRef = adminDb.collection('users');
-    const snapshot = await usersRef.where('phone', '==', userPhone).get();
+    
+    // Try the exact phone first
+    let snapshot = await usersRef.where('phone', '==', userPhone).get();
+    
+    // If not found, try with +54 prefix
+    if (snapshot.empty && !userPhone.startsWith('+')) {
+      snapshot = await usersRef.where('phone', '==', `+54${userPhone}`).get();
+    }
+    
+    // If still not found, try without +54 prefix
+    if (snapshot.empty && userPhone.startsWith('+54')) {
+      const withoutPrefix = userPhone.replace('+54', '');
+      snapshot = await usersRef.where('phone', '==', withoutPrefix).get();
+    }
 
     if (snapshot.empty) {
       console.log(`No user found with phone: ${userPhone}`);
