@@ -35,7 +35,7 @@ export default function OnboardingPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full"></div>
 
       <div
-        className="glass-card max-w-[90vw] md:max-w-xl mx-auto flex flex-col items-center gap-10 border-white/10 text-center z-10"
+        className="glass-card max-w-[90vw] md:max-w-xl mx-auto flex flex-col items-center border-white/10 text-center z-10 space-y-10"
       >
         <div>
           <Image
@@ -58,9 +58,9 @@ export default function OnboardingPage() {
           </p>
         </div>
 
-        <div className="w-full max-w-sm flex flex-col gap-4">
+        <div className="w-full max-w-sm flex flex-col space-y-4">
           <button
-            className="bg-[#2ECC71] hover:bg-[#27AE60] text-white font-black py-6 px-8 rounded-3xl border border-white/20 group flex items-center justify-center gap-4 w-full transition-all transform hover:scale-[1.02] active:scale-95 text-lg"
+            className="bg-[#2ECC71] hover:bg-[#27AE60] text-white font-black py-6 px-8 rounded-3xl border border-white/20 group flex items-center justify-center space-x-4 w-full transition-all transform hover:scale-[1.02] active:scale-95 text-lg"
             onClick={() => handleNavigation('/reclamo/nuevo')}
           >
             <span className="text-2xl">🚨</span>
@@ -73,7 +73,7 @@ export default function OnboardingPage() {
           {hasSession && (
             <>
               <button
-                className="bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 group flex items-center justify-center gap-3 w-full transition-all"
+                className="bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 group flex items-center justify-center space-x-3 w-full transition-all"
                 onClick={() => handleNavigation('/reclamos')}
               >
                 <span className="text-xl">🚥</span>
@@ -84,7 +84,7 @@ export default function OnboardingPage() {
               </button>
 
               <button
-                className="bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 group flex items-center justify-center gap-3 w-full transition-all"
+                className="bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-6 rounded-2xl border border-white/10 group flex items-center justify-center space-x-3 w-full transition-all"
                 onClick={() => handleNavigation('/mensajes')}
               >
                 <span className="text-xl">📢</span>
