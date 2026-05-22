@@ -56,19 +56,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Send the push notification via FCM
+    // Usamos 'data' en lugar de 'notification' para tener control total
+    // y evitar que el sistema muestre una duplicada automáticamente.
     const message = {
       token: fcmToken,
-      notification: {
+      data: {
         title: title,
         body: messageBody,
+        link: '/mensajes',
       },
       webpush: {
-        notification: {
-          icon: '/icon-192x192.png',
-          badge: '/icon-192x192.png',
-          vibrate: [200, 100, 200],
-          requireInteraction: true,
-        },
         fcmOptions: {
           link: '/mensajes',
         },

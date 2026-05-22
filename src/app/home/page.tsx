@@ -32,8 +32,9 @@ export default function HomePage() {
           try {
             // Register service worker explicitly for Firebase Messaging
             if ('serviceWorker' in navigator) {
-              const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-              console.log('✅ Service Worker registrado:', registration.scope);
+              // Agregamos un parámetro de versión para forzar al navegador a detectar el cambio
+              const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js?v=3');
+              console.log('✅ Service Worker registrado/actualizado:', registration.scope);
               
               // Pass SW registration to get a valid FCM token
               const result = await requestNotificationToken(registration);
