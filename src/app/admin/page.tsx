@@ -301,7 +301,7 @@ export default function AdminDashboardPage() {
             <h1 className="text-2xl font-black text-white tracking-tight uppercase">Panel de Control</h1>
             <p className="text-[#2ECC71] text-[10px] font-bold tracking-[0.2em] uppercase">Monitoreo de Gestión Municipal — Las Higueras</p>
           </div>
-          <div className="flex flex-wrap gap-4 lg:gap-8 w-full lg:w-auto items-center">
+          <div className="flex flex-wrap justify-center gap-4 lg:gap-8 w-full lg:w-auto items-center">
             <div className="flex bg-black/40 p-2 px-4 rounded-xl border border-white/5 lg:mr-4 items-center w-full lg:w-auto justify-center mb-2 lg:mb-0">
                <span className="text-[10px] font-black text-white/50 tracking-widest uppercase">
                  Sesión Administrador: <span className="text-[#2ECC71]">{currentUser?.name || 'Gestor'}</span>
