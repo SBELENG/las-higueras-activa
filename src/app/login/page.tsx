@@ -557,73 +557,42 @@ export default function LoginPage() {
                 </div>
 
                 {/* --- Documentos Legales y Aceptación --- */}
-                <div className="pt-16 mt-12 border-t border-white/10 space-y-10">
-
-                  {/* Section title */}
-                  <p className="text-[10px] font-black text-white/30 tracking-[0.2em] uppercase text-center">
-                    Documentación Legal
-                  </p>
-
-                  {/* Links to read documents - symmetric 2-column grid */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <button 
-                      type="button"
-                      onClick={() => window.open('/terminos', '_blank')}
-                      className="flex flex-col items-center gap-3 p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-[#2ECC71]/40 transition-all group active:scale-95"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-[#2ECC71]/10 flex items-center justify-center shrink-0 group-hover:bg-[#2ECC71]/20 transition-colors">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" strokeWidth="2">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                          <polyline points="14 2 14 8 20 8" />
-                          <line x1="16" y1="13" x2="8" y2="13" />
-                          <line x1="16" y1="17" x2="8" y2="17" />
+                <div className="pt-8 mt-8 border-t border-white/10">
+                  <label className="flex items-start gap-4 cursor-pointer p-4 md:p-5 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 hover:border-[#2ECC71]/40 transition-all group">
+                    <div className="pt-1 shrink-0">
+                      <div className="relative flex items-center justify-center w-6 h-6">
+                        <input 
+                          type="checkbox"
+                          className="peer appearance-none w-6 h-6 border-2 border-white/20 rounded bg-black/20 checked:bg-[#2ECC71] checked:border-[#2ECC71] transition-all cursor-pointer"
+                          checked={acceptedTerms}
+                          onChange={(e) => setAcceptedTerms(e.target.checked)}
+                        />
+                        <svg className="absolute w-4 h-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
                         </svg>
                       </div>
-                      <div className="text-center">
-                        <p className="text-white/80 text-xs font-bold group-hover:text-white transition-colors leading-tight">Términos y Condiciones</p>
-                        <p className="text-[#2ECC71]/50 text-[9px] uppercase tracking-wider font-bold mt-1">Leer ↗</p>
-                      </div>
-                    </button>
-
-                    <button 
-                      type="button"
-                      onClick={() => window.open('/privacidad', '_blank')}
-                      className="flex flex-col items-center gap-3 p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-[#3498DB]/40 transition-all group active:scale-95"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-[#3498DB]/10 flex items-center justify-center shrink-0 group-hover:bg-[#3498DB]/20 transition-colors">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3498DB" strokeWidth="2">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                        </svg>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-white/80 text-xs font-bold group-hover:text-white transition-colors leading-tight">Política de Privacidad</p>
-                        <p className="text-[#3498DB]/50 text-[9px] uppercase tracking-wider font-bold mt-1">Leer ↗</p>
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* Spacer */}
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-                  </div>
-
-                  {/* Mandatory acceptance checkbox */}
-                  <label className="flex items-start gap-4 cursor-pointer p-5 bg-black/30 rounded-2xl border-2 border-white/10 hover:border-[#2ECC71]/40 transition-all shadow-lg">
-                    <div className="pt-0.5 shrink-0">
-                      <input 
-                        type="checkbox"
-                        className="w-6 h-6 accent-[#2ECC71] rounded cursor-pointer"
-                        checked={acceptedTerms}
-                        onChange={(e) => setAcceptedTerms(e.target.checked)}
-                      />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white/90 text-sm font-semibold leading-relaxed">
-                        He leído y acepto los <strong className="text-[#2ECC71]">Términos y Condiciones</strong> y la <strong className="text-[#3498DB]">Política de Privacidad</strong>.
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-white/90 text-[13px] md:text-sm font-medium leading-relaxed">
+                        He leído y acepto los{' '}
+                        <button 
+                          type="button" 
+                          onClick={(e) => { e.preventDefault(); window.open('/terminos', '_blank'); }} 
+                          className="text-[#2ECC71] font-bold hover:underline transition-all active:scale-95"
+                        >
+                          Términos y Condiciones
+                        </button>
+                        {' '}y la{' '}
+                        <button 
+                          type="button" 
+                          onClick={(e) => { e.preventDefault(); window.open('/privacidad', '_blank'); }} 
+                          className="text-[#3498DB] font-bold hover:underline transition-all active:scale-95"
+                        >
+                          Política de Privacidad
+                        </button>.
                       </p>
-                      <p className="text-white/30 text-[10px] mt-2 leading-relaxed">
-                        Al tildar esta casilla, declaro conocer y aceptar las condiciones del servicio.
+                      <p className="text-white/40 text-[10px] md:text-[11px] mt-1.5 leading-relaxed">
+                        Al tildar esta casilla, declaro conocer y aceptar las condiciones de uso del servicio.
                       </p>
                     </div>
                   </label>
