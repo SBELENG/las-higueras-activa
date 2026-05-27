@@ -641,7 +641,7 @@ export default function LoginPage() {
                   </button>
 
                   <p className="text-center text-[#2ECC71]/40 text-[9px] font-black tracking-widest uppercase pt-2">
-                    Desarrollado por Ideas Digitales
+                    Desarrollado por 1000 Ideas Digitales
                   </p>
                 </div>
               </form>
