@@ -60,12 +60,13 @@ export default function OnboardingPage() {
 
         <div className="w-full max-w-sm flex flex-col space-y-4">
           <button
-            className="bg-[#2ECC71] hover:bg-[#27AE60] text-white font-black py-6 px-8 rounded-3xl border border-white/20 group flex items-center justify-center space-x-4 w-full transition-all transform hover:scale-[1.02] active:scale-95 text-lg"
+            className="bg-gradient-to-b from-[#2ECC71] to-[#27AE60] text-white font-black py-7 px-8 md:py-8 rounded-[2rem] border-2 border-white/20 hover:border-white/40 group flex items-center justify-center space-x-4 w-full transition-all duration-300 active:scale-95 text-xl md:text-2xl shadow-[0_0_30px_rgba(46,204,113,0.4)] hover:shadow-[0_0_50px_rgba(46,204,113,0.6)] relative overflow-hidden"
             onClick={() => handleNavigation('/reclamo/nuevo')}
           >
-            <span className="text-2xl">🚨</span>
-            <span className="flex-1 text-left">Comenzar Reclamo</span>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+            <span className="text-3xl md:text-4xl filter drop-shadow-lg transform group-hover:rotate-12 transition-transform">🚨</span>
+            <span className="flex-1 text-left tracking-wide drop-shadow-md">Comenzar Reclamo</span>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-2 transition-transform drop-shadow-md">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </button>
