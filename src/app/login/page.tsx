@@ -557,18 +557,13 @@ export default function LoginPage() {
                 {/* --- Documentos Legales y Aceptación --- */}
                 <div className="pt-4 border-t border-white/10 mt-2">
                   <label className="flex items-start gap-4 cursor-pointer p-4 md:p-5 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 hover:border-[#2ECC71]/40 transition-all group">
-                    <div className="pt-1 shrink-0">
-                      <div className="relative flex items-center justify-center w-6 h-6">
-                        <input 
-                          type="checkbox"
-                          className="peer appearance-none w-6 h-6 border-2 border-white/20 rounded bg-black/20 checked:bg-[#2ECC71] checked:border-[#2ECC71] transition-all cursor-pointer"
-                          checked={acceptedTerms}
-                          onChange={(e) => setAcceptedTerms(e.target.checked)}
-                        />
-                        <svg className="absolute w-4 h-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      </div>
+                    <div className="pt-0.5 shrink-0">
+                      <input 
+                        type="checkbox"
+                        className="w-5 h-5 accent-[#2ECC71] cursor-pointer"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      />
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <p className="text-white/90 text-[13px] md:text-sm font-medium leading-relaxed">
