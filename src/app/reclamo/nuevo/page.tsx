@@ -219,26 +219,25 @@ export default function NuevoReclamoPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-10"
+                className="glass-card w-full flex flex-col justify-between min-h-[65vh] p-6 md:p-10 gap-8"
               >
-                <div className="space-y-6">
-                  <label className="text-white/70 font-medium flex items-center gap-2">
-                    <span className="text-2xl">{category?.icon}</span>
+                <div className="space-y-4 flex-1 flex flex-col">
+                  <label className="text-white/90 text-[11px] md:text-xs font-black uppercase tracking-[0.2em] ml-2 drop-shadow-md flex items-center gap-2">
+                    <span className="text-2xl drop-shadow-md">{category?.icon}</span>
                     Detalle del problema ({category?.label})
                   </label>
                   <textarea
                     required
-                    rows={5}
                     placeholder="Contanos qué está pasando..."
-                    className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white focus:outline-none focus:border-[#2ECC71] transition-all resize-none placeholder:text-white/20"
+                    className="flex-1 w-full bg-white/10 border-2 border-white/20 focus:border-[#2ECC71] rounded-3xl p-6 text-white text-lg focus:outline-none transition-all resize-none placeholder:text-white/30 backdrop-blur-md shadow-inner min-h-[120px]"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
                 </div>
 
                 <div className="space-y-4">
-                  <label className="text-white/70 font-medium flex items-center gap-2">
-                    📸 Foto del lugar {category?.critical && <span className="text-[#2ECC71] text-xs font-bold">(Obligatoria)</span>}
+                  <label className="text-white/90 text-[11px] md:text-xs font-black uppercase tracking-[0.2em] ml-2 drop-shadow-md flex items-center gap-2">
+                    📸 Foto del lugar {category?.critical && <span className="text-[#2ECC71] font-bold text-[10px]">(Obligatoria)</span>}
                   </label>
 
                   {/* Camera specific input */}
@@ -262,12 +261,12 @@ export default function NuevoReclamoPage() {
 
                   {/* Photo preview or dual add-photo buttons */}
                   {photo ? (
-                    <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-[#2ECC71]/50 relative">
+                    <div className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-[#2ECC71]/50 relative shadow-lg">
                       <img src={photo} alt="Vista previa" className="w-full h-full object-cover" />
                       <button
                         type="button"
                         onClick={() => setPhoto(null)}
-                        className="absolute top-3 right-3 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/20 backdrop-blur-md"
+                        className="absolute top-4 right-4 bg-black/70 text-white text-[11px] font-black uppercase tracking-widest px-4 py-2 rounded-full border border-white/20 backdrop-blur-md hover:bg-black/90 transition-all active:scale-95"
                       >
                         ✕ Eliminar Foto
                       </button>
@@ -277,29 +276,29 @@ export default function NuevoReclamoPage() {
                       <button
                         type="button"
                         onClick={() => photoInputRef.current?.click()}
-                        className="w-full flex flex-col items-center justify-center gap-3 p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#2ECC71]/50 transition-all cursor-pointer"
+                        className="w-full flex flex-col items-center justify-center gap-3 p-6 bg-white/10 border-2 border-white/20 rounded-3xl hover:bg-white/20 hover:border-[#2ECC71]/50 transition-all cursor-pointer shadow-inner active:scale-95"
                       >
-                        <span className="text-4xl text-[#2ECC71]">📷</span>
-                        <span className="text-white/90 text-sm font-bold">Tomar Foto</span>
+                        <span className="text-4xl drop-shadow-md">📷</span>
+                        <span className="text-white/90 text-[11px] md:text-xs font-black uppercase tracking-[0.15em]">Tomar Foto</span>
                       </button>
                       
                       <button
                         type="button"
                         onClick={() => galleryInputRef.current?.click()}
-                        className="w-full flex flex-col items-center justify-center gap-3 p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl hover:bg-white/10 hover:border-[#3498DB]/50 transition-all cursor-pointer"
+                        className="w-full flex flex-col items-center justify-center gap-3 p-6 bg-white/10 border-2 border-white/20 rounded-3xl hover:bg-white/20 hover:border-[#3498DB]/50 transition-all cursor-pointer shadow-inner active:scale-95"
                       >
-                        <span className="text-4xl text-[#3498DB]">🖼️</span>
-                        <span className="text-white/90 text-sm font-bold">Subir Galería</span>
+                        <span className="text-4xl drop-shadow-md">🖼️</span>
+                        <span className="text-white/90 text-[11px] md:text-xs font-black uppercase tracking-[0.15em]">Galería</span>
                       </button>
                     </div>
                   )}
                 </div>
 
-                <div className="pt-16">
+                <div className="pt-6 mt-auto">
                   <button
                     onClick={handleNext}
                     disabled={!description || (category?.critical && !photo)}
-                    className="w-full bg-[#2ECC71] hover:bg-[#27AE60] disabled:opacity-50 text-white font-bold p-5 rounded-2xl shadow-lg transition-all"
+                    className="w-full bg-gradient-to-b from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-bold py-5 rounded-[1.5rem] border-2 border-white/20 transition-all active:scale-95 text-lg md:text-xl shadow-[0_0_20px_rgba(46,204,113,0.3)] hover:shadow-[0_0_30px_rgba(46,204,113,0.5)] tracking-wide"
                   >
                     Siguiente: Ubicación
                   </button>
