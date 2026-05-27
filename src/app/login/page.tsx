@@ -293,17 +293,40 @@ export default function LoginPage() {
                 <p className="text-white/50 text-sm md:text-base">Tu puerta de confianza a Las Higueras</p>
               </div>
 
-              <form onSubmit={handleSendCode} className="space-y-12 flex-1 flex flex-col justify-center">
-                <div className="space-y-4">
-                  <label className="text-white/70 text-xs md:text-sm font-bold uppercase tracking-widest ml-1">N° de Teléfono</label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="Ej: 3584123456"
-                    className="w-full bg-white/5 border-2 border-white/10 hover:border-white/20 rounded-2xl px-8 md:px-10 py-5 md:py-6 text-white text-xl md:text-2xl focus:outline-none focus:border-[#2ECC71]/70 transition-all placeholder:text-white/20 shadow-inner"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                  />
+              <form onSubmit={handleSendCode} className="space-y-16 flex-1 flex flex-col justify-center mt-4">
+                <div className="space-y-3">
+                  <label className="text-white/90 text-[11px] md:text-xs font-black uppercase tracking-[0.2em] ml-3 drop-shadow-md">
+                    N° de Teléfono Móvil
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                      <span className="text-2xl md:text-3xl opacity-80 group-focus-within:opacity-100 transition-opacity drop-shadow-md">📱</span>
+                    </div>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="Ej: 358 412 3456"
+                      className="w-full bg-white/10 border-2 border-white/20 hover:border-white/40 focus:border-[#2ECC71] rounded-[1.5rem] pl-16 md:pl-20 pr-14 py-5 md:py-6 text-white text-xl md:text-2xl font-bold tracking-wider focus:outline-none transition-all placeholder:text-white/30 shadow-[0_8px_30px_rgba(0,0,0,0.12)] focus:shadow-[0_0_25px_rgba(46,204,113,0.25)] backdrop-blur-md"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                    />
+                    <AnimatePresence>
+                      {phone.length >= 10 && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.5 }} 
+                          animate={{ opacity: 1, scale: 1 }} 
+                          exit={{ opacity: 0, scale: 0.5 }}
+                          className="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none"
+                        >
+                          <div className="bg-[#2ECC71]/20 p-1.5 rounded-full backdrop-blur-sm border border-[#2ECC71]/50">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" strokeWidth="4" className="drop-shadow-md">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
 
                 {message && (
