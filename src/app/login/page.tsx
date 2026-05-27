@@ -505,23 +505,22 @@ export default function LoginPage() {
                 <p className="text-white/50 text-xs uppercase tracking-widest font-medium">Contanos un poco sobre vos</p>
               </div>
 
-              <form onSubmit={handleFinishProfile} className="space-y-12">
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Tu Nombre</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Escribí tu nombre"
-                      className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                  </div>
+              <form onSubmit={handleFinishProfile} className="flex-1 flex flex-col justify-between w-full mt-4 gap-6">
+                <div className="space-y-3">
+                  <label className="text-white/70 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] ml-2 drop-shadow-md">Tu Nombre</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Escribí tu nombre"
+                    className="w-full bg-white/10 border-2 border-white/20 hover:border-white/40 focus:border-[#2ECC71] rounded-2xl px-6 py-5 text-white text-lg focus:outline-none transition-all placeholder:text-white/30 backdrop-blur-md shadow-inner"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
 
-                <div className="space-y-6">
-                  <label className="text-white/70 text-xs font-bold uppercase tracking-widest ml-1">¿Cómo te identificás?</label>
-                  <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-3">
+                  <label className="text-white/70 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] ml-2 drop-shadow-md">¿Cómo te identificás?</label>
+                  <div className="grid grid-cols-1 gap-3">
                     {USER_ROLES.map((uRole) => (
                       <label 
                         key={uRole.id}
@@ -553,11 +552,10 @@ export default function LoginPage() {
                       </label>
                     ))}
                   </div>
-                  </div>
                 </div>
 
                 {/* --- Documentos Legales y Aceptación --- */}
-                <div className="pt-8 mt-8 border-t border-white/10">
+                <div className="pt-4 border-t border-white/10 mt-2">
                   <label className="flex items-start gap-4 cursor-pointer p-4 md:p-5 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 hover:border-[#2ECC71]/40 transition-all group">
                     <div className="pt-1 shrink-0">
                       <div className="relative flex items-center justify-center w-6 h-6">
@@ -599,12 +597,12 @@ export default function LoginPage() {
                 </div>
 
                 {/* --- Botón y créditos --- */}
-                <div className="pt-14 space-y-6">
+                <div className="mt-auto pt-2 space-y-4">
                   <button
                     type="button"
                     onClick={handleFinishProfile}
                     disabled={!name || !role || !acceptedTerms}
-                    className="w-full bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-black py-5 px-8 rounded-2xl shadow-[0_8px_30px_-8px_rgba(46,204,113,0.5)] transition-all transform active:scale-95 text-base tracking-wide"
+                    className="w-full bg-gradient-to-b from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-black py-5 rounded-[1.5rem] border-2 border-white/20 transition-all active:scale-95 text-lg md:text-xl shadow-[0_0_20px_rgba(46,204,113,0.3)] hover:shadow-[0_0_30px_rgba(46,204,113,0.5)] tracking-wide"
                   >
                     Comenzar
                   </button>
