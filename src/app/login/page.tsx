@@ -283,24 +283,24 @@ export default function LoginPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="glass-card space-y-8 w-full"
+              className="glass-card w-full flex flex-col justify-evenly min-h-[75vh] py-10 md:py-14 gap-8"
             >
               <div className="text-center space-y-2">
                 <div className="flex justify-center mb-6">
-                  <img src="/assets/logo.svg" alt="Las Higueras Activa" className="h-16 w-auto drop-shadow-2xl" />
+                  <img src="/assets/logo.svg" alt="Las Higueras Activa" className="h-28 md:h-32 w-auto splash-logo" />
                 </div>
-                <h1 className="text-3xl font-bold text-white text-shadow tracking-tight">Identificación</h1>
-                <p className="text-white/50 text-sm">Tu puerta de confianza a Las Higueras</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-white text-shadow tracking-tight">Identificación</h1>
+                <p className="text-white/50 text-sm md:text-base">Tu puerta de confianza a Las Higueras</p>
               </div>
 
-              <form onSubmit={handleSendCode} className="space-y-12">
+              <form onSubmit={handleSendCode} className="space-y-12 flex-1 flex flex-col justify-center">
                 <div className="space-y-4">
-                  <label className="text-white/70 text-xs font-bold uppercase tracking-widest ml-1">N° de Teléfono</label>
+                  <label className="text-white/70 text-xs md:text-sm font-bold uppercase tracking-widest ml-1">N° de Teléfono</label>
                   <input
                     type="tel"
                     required
                     placeholder="Ej: 3584123456"
-                    className="w-full bg-white/5 border border-white/20 rounded-2xl px-10 py-6 text-white text-lg focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
+                    className="w-full bg-white/5 border-2 border-white/10 hover:border-white/20 rounded-2xl px-8 md:px-10 py-5 md:py-6 text-white text-xl md:text-2xl focus:outline-none focus:border-[#2ECC71]/70 transition-all placeholder:text-white/20 shadow-inner"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                   />
@@ -330,7 +330,7 @@ export default function LoginPage() {
                   id="send-code-btn"
                   type="submit"
                   disabled={loading || phone.length < 8}
-                  className="w-full bg-[#2ECC71] hover:bg-[#27AE60] disabled:opacity-50 text-white font-bold p-4 rounded-2xl shadow-lg transition-all transform active:scale-95"
+                  className="w-full bg-gradient-to-b from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-bold py-5 md:py-6 rounded-[1.5rem] border-2 border-white/20 transition-all active:scale-95 text-lg md:text-xl shadow-[0_0_20px_rgba(46,204,113,0.3)] hover:shadow-[0_0_30px_rgba(46,204,113,0.5)] tracking-wide"
                 >
                   {loading ? 'Enviando...' : 'Recibir código'}
                 </button>
@@ -348,7 +348,7 @@ export default function LoginPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="glass-card space-y-8 w-full"
+              className="glass-card w-full flex flex-col justify-evenly min-h-[75vh] py-10 md:py-14 gap-8 relative"
             >
               {/* Back button */}
               <button 
@@ -456,7 +456,7 @@ export default function LoginPage() {
           ) : (
             <div
               key="profile-step"
-              className="glass-card space-y-10 relative flex flex-col"
+              className="glass-card w-full flex flex-col justify-evenly min-h-[75vh] py-10 md:py-14 gap-8 relative"
             >
               {/* Back to Phone Step */}
               <button 
