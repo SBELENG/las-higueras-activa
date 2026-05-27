@@ -153,7 +153,6 @@ h1, h2, h3 {
 }
 
 .splash-logo {
-  margin-bottom: 2rem;
   border-radius: 20%;
   filter: drop-shadow(1px 1px 0px white) drop-shadow(-1px -1px 0px white) drop-shadow(1px -1px 0px white) drop-shadow(-1px 1px 0px white);
 }

@@ -35,7 +35,7 @@ export default function OnboardingPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-3xl rounded-full"></div>
 
       <div
-        className="glass-card max-w-[90vw] md:max-w-xl mx-auto flex flex-col items-center border-white/10 text-center z-10 space-y-10"
+        className="glass-card max-w-[90vw] md:max-w-xl mx-auto flex flex-col items-center justify-evenly min-h-[75vh] py-10 md:py-14 border-white/10 text-center z-10 gap-8 md:gap-12"
       >
         <div>
           <Image
