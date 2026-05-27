@@ -293,7 +293,7 @@ export default function LoginPage() {
                 <p className="text-white/50 text-sm md:text-base">Tu puerta de confianza a Las Higueras</p>
               </div>
 
-              <form onSubmit={handleSendCode} className="space-y-16 flex-1 flex flex-col justify-center mt-4">
+              <form onSubmit={handleSendCode} className="flex-1 flex flex-col justify-center w-full mt-4">
                 <div className="space-y-3">
                   <label className="text-white/90 text-[11px] md:text-xs font-black uppercase tracking-[0.2em] ml-3 drop-shadow-md">
                     N° de Teléfono Móvil
@@ -327,36 +327,40 @@ export default function LoginPage() {
                       )}
                     </AnimatePresence>
                   </div>
+
+                  {/* Espacio reservado para mensajes debajo del input */}
+                  <div className="min-h-[24px] pt-1">
+                    {message && (
+                      <motion.p 
+                        initial={{ opacity: 0, y: -5 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        className="text-[#2ECC71] text-center text-sm font-medium"
+                      >
+                        {message}
+                      </motion.p>
+                    )}
+                    {errorMessage && (
+                      <motion.p 
+                        initial={{ opacity: 0, y: -5 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        className="text-red-400 text-center text-sm font-medium"
+                      >
+                        {errorMessage}
+                      </motion.p>
+                    )}
+                  </div>
                 </div>
 
-                {message && (
-                  <motion.p 
-                    initial={{ opacity: 0, y: -5 }} 
-                    animate={{ opacity: 1, y: 0 }} 
-                    className="text-[#2ECC71] text-center text-sm font-medium"
+                <div className="mt-10 md:mt-14">
+                  <button
+                    id="send-code-btn"
+                    type="submit"
+                    disabled={loading || phone.length < 8}
+                    className="w-full bg-gradient-to-b from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-bold py-5 md:py-6 rounded-[1.5rem] border-2 border-white/20 transition-all active:scale-95 text-lg md:text-xl shadow-[0_0_20px_rgba(46,204,113,0.3)] hover:shadow-[0_0_30px_rgba(46,204,113,0.5)] tracking-wide"
                   >
-                    {message}
-                  </motion.p>
-                )}
-
-                {errorMessage && (
-                  <motion.p 
-                    initial={{ opacity: 0, y: -5 }} 
-                    animate={{ opacity: 1, y: 0 }} 
-                    className="text-red-400 text-center text-sm font-medium"
-                  >
-                    {errorMessage}
-                  </motion.p>
-                )}
-
-                <button
-                  id="send-code-btn"
-                  type="submit"
-                  disabled={loading || phone.length < 8}
-                  className="w-full bg-gradient-to-b from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-bold py-5 md:py-6 rounded-[1.5rem] border-2 border-white/20 transition-all active:scale-95 text-lg md:text-xl shadow-[0_0_20px_rgba(46,204,113,0.3)] hover:shadow-[0_0_30px_rgba(46,204,113,0.5)] tracking-wide"
-                >
-                  {loading ? 'Enviando...' : 'Recibir código'}
-                </button>
+                    {loading ? 'Enviando...' : 'Recibir código'}
+                  </button>
+                </div>
               </form>
 
               <p className="text-center text-white/30 text-xs">
