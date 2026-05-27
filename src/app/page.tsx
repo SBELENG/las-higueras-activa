@@ -29,10 +29,10 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="splash-screen relative overflow-x-hidden">
+    <div className="splash-screen relative overflow-hidden">
       {/* Decorative gradient blob */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[120px] rounded-full"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-3xl rounded-full"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-3xl rounded-full"></div>
 
       <div
         className="glass-card max-w-[90vw] md:max-w-xl mx-auto flex flex-col items-center border-white/10 text-center z-10 space-y-10"
@@ -43,7 +43,7 @@ export default function OnboardingPage() {
             alt="Las Higueras Activa"
             width={120}
             height={120}
-            className="splash-logo shadow-2xl"
+            className="splash-logo"
             priority
           />
         </div>
