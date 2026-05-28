@@ -6,8 +6,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamicMap from 'next/dynamic';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { updateClaimStatus, toggleClaimPriority, createMessage, Claim } from '@/lib/db';
-import { db } from '@/lib/firebase';
+import { updateClaimStatus, toggleClaimPriority, createMessage, Claim, saveAdminFcmToken } from '@/lib/db';
+import { db, requestNotificationToken } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 
 const InteractiveMap = dynamicMap(() => import('../../components/InteractiveMap'), { 
@@ -42,6 +42,8 @@ export default function AdminDashboardPage() {
     priorities: 0
   });
   const [newClaimAlert, setNewClaimAlert] = useState<{show: boolean, message: string}>({show: false, message: ''});
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<string>('default');
   const audioCtxRef = React.useRef<AudioContext | null>(null);
   const prevCountRef = React.useRef<number>(-1);
 
@@ -65,6 +67,45 @@ export default function AdminDashboardPage() {
     else {
       // Por defecto para testing
       setCurrentUser({ name: 'Gestor Municipal', role: 'gestor' });
+    }
+  }, []);
+
+  const setupNotifications = async () => {
+    try {
+      if ('serviceWorker' in navigator && 'Notification' in window) {
+        if (Notification.permission !== 'granted') {
+          const permission = await Notification.requestPermission();
+          setNotificationStatus(permission);
+          if (permission !== 'granted') return;
+        } else {
+          setNotificationStatus('granted');
+        }
+
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js?v=4');
+        const { token } = await requestNotificationToken(registration);
+        
+        if (token) {
+          let deviceId = localStorage.getItem('adminDeviceId');
+          if (!deviceId) {
+            deviceId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2);
+            localStorage.setItem('adminDeviceId', deviceId);
+          }
+          const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+          await saveAdminFcmToken(deviceId, token, isPWA);
+          setNotificationsEnabled(true);
+        }
+      }
+    } catch (err) {
+      console.error('Error setup notificaciones:', err);
+    }
+  };
+
+  useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationStatus(Notification.permission);
+      if (Notification.permission === 'granted') {
+        setupNotifications();
+      }
     }
   }, []);
 
@@ -302,10 +343,20 @@ export default function AdminDashboardPage() {
             <p className="text-[#2ECC71] text-[10px] font-bold tracking-[0.2em] uppercase">Monitoreo de Gestión Municipal — Las Higueras</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4 lg:gap-8 w-full lg:w-auto items-center">
-            <div className="flex bg-black/40 p-2 px-4 rounded-xl border border-white/5 lg:mr-4 items-center w-full lg:w-auto justify-center mb-2 lg:mb-0">
+            <div className="flex bg-black/40 p-2 px-4 rounded-xl border border-white/5 lg:mr-4 items-center w-full lg:w-auto justify-center mb-2 lg:mb-0 gap-4">
                <span className="text-[10px] font-black text-white/50 tracking-widest uppercase">
-                 Sesión Administrador: <span className="text-[#2ECC71]">{currentUser?.name || 'Gestor'}</span>
+                 Sesión: <span className="text-[#2ECC71]">{currentUser?.name || 'Gestor'}</span>
                </span>
+               <button
+                 onClick={setupNotifications}
+                 className={`text-[10px] font-bold px-3 py-1.5 rounded-lg transition-colors uppercase tracking-wider ${
+                   notificationStatus === 'granted' && notificationsEnabled 
+                     ? 'bg-[#2ECC71]/20 text-[#2ECC71] border border-[#2ECC71]/30' 
+                     : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+                 }`}
+               >
+                 {notificationStatus === 'granted' && notificationsEnabled ? '🔔 Alertas Activas' : '🔕 Activar Alertas'}
+               </button>
             </div>
             <MetricItem label="PENDIENTES" value={metrics.pending} color="#E74C3C" />
             <MetricItem label="EN PROCESO" value={metrics.inProgress} color="#F1C40F" />

@@ -97,6 +97,18 @@ export async function createClaim(claimData: Omit<Claim, 'photo'> & { photoBase6
     delete (newClaim as any).photoBase64;
 
     await setDoc(doc(db, 'claims', newIdStr), newClaim);
+
+    // Notify admins asynchronously
+    try {
+      fetch('/api/notify-admins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimId: newIdStr, category: claimData.category })
+      }).catch(err => console.error("Error triggering admin notification:", err));
+    } catch (e) {
+      console.error("Error triggering admin notification setup:", e);
+    }
+
     return newIdStr;
   } catch (error) {
     console.error("Error creating claim:", error);
@@ -268,5 +280,35 @@ export async function saveUserProfile(userData: { name: string, phone: string, r
       ...userData,
       createdAt: serverTimestamp()
     });
+  }
+}
+
+/**
+ * Save or update Admin FCM token.
+ * Uses a deviceId to deduplicate and `isPWA` to prioritize App notifications.
+ */
+export async function saveAdminFcmToken(deviceId: string, token: string, isPWA: boolean) {
+  try {
+    const docRef = doc(db, 'adminTokens', deviceId);
+    
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if (data.isPWA && !isPWA) {
+        // Do not overwrite PWA token with Browser token if it's the same device
+        console.log('Skipping token update: PWA takes precedence over browser on same device');
+        return;
+      }
+    }
+    
+    await setDoc(docRef, {
+      token,
+      isPWA,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    
+    console.log(`Admin FCM Token saved for device ${deviceId.substring(0, 8)}... (isPWA: ${isPWA})`);
+  } catch (error) {
+    console.error('Error saving admin token:', error);
   }
 }
