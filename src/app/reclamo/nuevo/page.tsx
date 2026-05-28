@@ -313,22 +313,22 @@ export default function NuevoReclamoPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
+                className="glass-card w-full flex flex-col justify-between min-h-[65vh] p-6 md:p-10 gap-6 relative"
               >
-                <div className="space-y-4">
-                  <p className="text-white/70 font-medium flex items-center gap-2">
-                    <span className="text-2xl">📍</span>
+                <div className="space-y-2">
+                  <p className="text-white/90 text-[11px] md:text-xs font-black uppercase tracking-[0.2em] ml-2 drop-shadow-md flex items-center gap-2">
+                    <span className="text-2xl drop-shadow-md">📍</span>
                     ¿Dónde está el problema?
                   </p>
-                  <p className="text-white/70 text-sm leading-relaxed">Mueva el marcador en el mapa para ubicar el reclamo con precisión.</p>
+                  <p className="text-white/60 text-xs leading-relaxed ml-2">Mueva el marcador en el mapa para ubicar el reclamo con precisión.</p>
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-white/70 text-[10px] font-black uppercase tracking-[0.2em] ml-1">Dirección o Referencia del Reclamo</label>
+                  <label className="text-white/90 text-[11px] md:text-xs font-black uppercase tracking-[0.2em] ml-2 drop-shadow-md">Dirección o Referencia del Reclamo</label>
                   <input
                     type="text"
                     placeholder="Ej: Calle San Martín 123 o 'Frente al club'"
-                    className="w-full bg-white/5 border border-white/20 rounded-2xl px-6 py-5 text-white focus:outline-none focus:border-[#2ECC71] transition-all placeholder:text-white/20"
+                    className="w-full bg-white/10 border-2 border-white/20 hover:border-white/40 focus:border-[#2ECC71] rounded-3xl px-6 py-5 text-white text-base md:text-lg focus:outline-none transition-all placeholder:text-white/30 backdrop-blur-md shadow-inner"
                     value={claimAddress}
                     onChange={(e) => { setClaimAddress(e.target.value); if (usingGeoLocation && e.target.value) setUsingGeoLocation(false); }}
                     onBlur={() => {
@@ -349,11 +349,11 @@ export default function NuevoReclamoPage() {
                     }}
                   />
                   {!claimAddress && (
-                    <p className="text-white/60 text-xs italic ml-1 mt-1">Si no conocés la dirección, usá el botón de ubicación actual más abajo.</p>
+                    <p className="text-white/50 text-[10px] italic ml-2 mt-1">Si no conocés la dirección, usá el botón de ubicación actual más abajo.</p>
                   )}
                 </div>
 
-                <div className="w-full h-[320px] rounded-3xl overflow-hidden border border-white/10 bg-black/20 relative shadow-inner">
+                <div className="w-full h-[280px] md:h-[320px] rounded-3xl overflow-hidden border-2 border-white/20 bg-black/20 relative shadow-lg">
                   <InteractiveMap 
                     center={claimLocation}
                     zoom={15}
@@ -391,13 +391,13 @@ export default function NuevoReclamoPage() {
                       anchor: { x: 12, y: 24 }
                     }}
                   />
-                  <div className="absolute top-4 left-4 right-4 bg-black/80 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 text-xs font-bold text-white text-center shadow-xl pointer-events-none">
+                  <div className="absolute top-4 left-4 right-4 bg-black/70 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/20 text-[10px] font-black uppercase tracking-widest text-white text-center shadow-xl pointer-events-none">
                     📍 Arrastrá el marcador para ubicar el reclamo
                   </div>
                 </div>
 
                 {/* Botón Usar mi ubicación */}
-                <div className="flex justify-center z-20 relative mt-4">
+                <div className="flex justify-center z-20 relative">
                   <button 
                     type="button"
                     disabled={geoLoading}
@@ -436,25 +436,25 @@ export default function NuevoReclamoPage() {
                         alert('Tu navegador no soporta geolocalización.');
                       }
                     }}
-                    className={`backdrop-blur-xl text-white px-8 py-4 rounded-2xl text-sm font-bold shadow-[0_8px_30px_-8px_rgba(52,152,219,0.4)] border flex items-center justify-center gap-3 w-full transition-all transform active:scale-95 ${
+                    className={`backdrop-blur-xl text-white px-6 py-4 rounded-3xl text-[11px] md:text-xs font-black uppercase tracking-widest shadow-lg border-2 flex items-center justify-center gap-3 w-full transition-all transform active:scale-95 ${
                       usingGeoLocation 
-                        ? 'bg-[#2ECC71]/20 border-[#2ECC71]/50 shadow-[0_8px_30px_-8px_rgba(46,204,113,0.4)]' 
-                        : 'bg-white/10 border-[#3498DB]/30 hover:bg-[#3498DB]/20 hover:border-[#3498DB]/60'
+                        ? 'bg-[#2ECC71]/20 border-[#2ECC71]/50 shadow-[0_0_20px_rgba(46,204,113,0.3)]' 
+                        : 'bg-white/10 border-white/20 hover:bg-white/20 hover:border-[#3498DB]/60'
                     }`}
                   >
                     {geoLoading ? (
                       <>
-                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                         <span>Obteniendo ubicación...</span>
                       </>
                     ) : usingGeoLocation ? (
                       <>
-                        <span className="text-xl leading-none">✅</span>
+                        <span className="text-lg leading-none">✅</span>
                         <span>Ubicación obtenida</span>
                       </>
                     ) : (
                       <>
-                        <span className="text-xl leading-none">📍</span>
+                        <span className="text-lg leading-none">📍</span>
                         <span>Usar mi ubicación actual</span>
                       </>
                     )}
@@ -462,21 +462,21 @@ export default function NuevoReclamoPage() {
                 </div>
 
                 {/* Separador visual */}
-                <div className="flex items-center gap-4 py-6">
+                <div className="flex items-center gap-4 py-2">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
                 </div>
 
                 {/* Botón Confirmar y Enviar */}
-                <div className="pb-8">
+                <div className="pt-2 mt-auto">
                   <button
                     onClick={handleSubmit}
                     disabled={(!claimAddress && !usingGeoLocation && !markerMoved) || loading || isGeocoding}
-                    className="w-full bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-black py-5 px-8 rounded-2xl shadow-[0_8px_30px_-8px_rgba(46,204,113,0.5)] transition-all transform active:scale-95 text-base tracking-wide"
+                    className="w-full bg-gradient-to-b from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#219a52] disabled:opacity-50 text-white font-black py-5 rounded-[1.5rem] border-2 border-white/20 transition-all active:scale-95 text-lg md:text-xl shadow-[0_0_20px_rgba(46,204,113,0.3)] hover:shadow-[0_0_30px_rgba(46,204,113,0.5)] tracking-wide"
                   >
-                    {loading ? 'Enviando Reclamo...' : isGeocoding ? 'Buscando Dirección...' : '✅ Confirmar y Enviar'}
+                    {loading ? 'Enviando Reclamo...' : isGeocoding ? 'Buscando...' : '✅ Confirmar y Enviar'}
                   </button>
                   {!claimAddress && !usingGeoLocation && !markerMoved && (
-                    <p className="text-white/50 text-xs text-center mt-3 italic">Ingresá una dirección, usá tu ubicación o mové el marcador en el mapa</p>
+                    <p className="text-white/40 text-[10px] text-center mt-3 italic">Ingresá una dirección, usá tu ubicación o mové el marcador en el mapa</p>
                   )}
                 </div>
               </motion.div>
